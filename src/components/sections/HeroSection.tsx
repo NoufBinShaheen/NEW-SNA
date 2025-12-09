@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Brain, Heart } from "lucide-react";
 
@@ -32,9 +33,11 @@ const HeroSection = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-              <Button size="lg" className="gradient-primary font-semibold shadow-soft hover:shadow-glow transition-all group px-8">
-                Start Your Journey
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <Button size="lg" className="gradient-primary font-semibold shadow-soft hover:shadow-glow transition-all group px-8" asChild>
+                <Link to="/health-profile">
+                  Start Your Journey
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </Button>
               <Button size="lg" variant="outline" className="font-semibold border-2">
                 Learn More
