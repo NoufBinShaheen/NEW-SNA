@@ -11,6 +11,7 @@ import { ArrowLeft, ArrowRight, Check, User, Heart, Utensils, Target } from "luc
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { toast } from "@/hooks/use-toast";
+import { healthProfileSchema, step1Schema, step2Schema, step3Schema, step4Schema } from "@/lib/validations/healthProfile";
 
 const healthConditions = [
   "Diabetes Type 1",
@@ -72,6 +73,7 @@ const goals = [
 const HealthProfile = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -93,6 +95,10 @@ const HealthProfile = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
+    }
   };
 
   const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
@@ -104,7 +110,52 @@ const HealthProfile = () => {
     }));
   };
 
+  const validateStep = (currentStep: number): boolean => {
+    const schemas = {
+      1: step1Schema,
+      2: step2Schema,
+      3: step3Schema,
+      4: step4Schema,
+    };
+    
+    const schema = schemas[currentStep as keyof typeof schemas];
+    const result = schema.safeParse(formData);
+    
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          newErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(newErrors);
+      return false;
+    }
+    
+    setErrors({});
+    return true;
+  };
+
   const handleSubmit = () => {
+    // Final validation of entire form
+    const result = healthProfileSchema.safeParse(formData);
+    
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          newErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(newErrors);
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in the form before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     toast({
       title: "Profile Created!",
       description: "Your health profile has been saved. We'll create your personalized nutrition plan.",
@@ -112,7 +163,11 @@ const HealthProfile = () => {
     navigate("/");
   };
 
-  const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
+  const nextStep = () => {
+    if (validateStep(step)) {
+      setStep(prev => Math.min(prev + 1, 4));
+    }
+  };
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
   const steps = [
@@ -191,18 +246,24 @@ const HealthProfile = () => {
                       <Input 
                         id="firstName" 
                         placeholder="John"
+                        maxLength={50}
                         value={formData.firstName}
                         onChange={(e) => handleInputChange("firstName", e.target.value)}
+                        className={errors.firstName ? "border-destructive" : ""}
                       />
+                      {errors.firstName && <p className="text-sm text-destructive">{errors.firstName}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input 
                         id="lastName" 
                         placeholder="Doe"
+                        maxLength={50}
                         value={formData.lastName}
                         onChange={(e) => handleInputChange("lastName", e.target.value)}
+                        className={errors.lastName ? "border-destructive" : ""}
                       />
+                      {errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -212,9 +273,13 @@ const HealthProfile = () => {
                         id="age" 
                         type="number" 
                         placeholder="30"
+                        min={1}
+                        max={120}
                         value={formData.age}
                         onChange={(e) => handleInputChange("age", e.target.value)}
+                        className={errors.age ? "border-destructive" : ""}
                       />
+                      {errors.age && <p className="text-sm text-destructive">{errors.age}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="gender">Gender</Label>
@@ -238,9 +303,13 @@ const HealthProfile = () => {
                         id="height" 
                         type="number" 
                         placeholder="175"
+                        min={50}
+                        max={300}
                         value={formData.height}
                         onChange={(e) => handleInputChange("height", e.target.value)}
+                        className={errors.height ? "border-destructive" : ""}
                       />
+                      {errors.height && <p className="text-sm text-destructive">{errors.height}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="weight">Weight (kg)</Label>
@@ -248,9 +317,13 @@ const HealthProfile = () => {
                         id="weight" 
                         type="number" 
                         placeholder="70"
+                        min={20}
+                        max={500}
                         value={formData.weight}
                         onChange={(e) => handleInputChange("weight", e.target.value)}
+                        className={errors.weight ? "border-destructive" : ""}
                       />
+                      {errors.weight && <p className="text-sm text-destructive">{errors.weight}</p>}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -298,10 +371,12 @@ const HealthProfile = () => {
                     <Textarea
                       id="medications"
                       placeholder="List any medications you're currently taking..."
+                      maxLength={1000}
                       value={formData.medications}
                       onChange={(e) => handleInputChange("medications", e.target.value)}
-                      className="min-h-[100px]"
+                      className={`min-h-[100px] ${errors.medications ? "border-destructive" : ""}`}
                     />
+                    {errors.medications && <p className="text-sm text-destructive">{errors.medications}</p>}
                   </div>
                 </>
               )}
@@ -352,9 +427,12 @@ const HealthProfile = () => {
                     <Textarea
                       id="dislikedFoods"
                       placeholder="List any foods you don't enjoy eating..."
+                      maxLength={500}
                       value={formData.dislikedFoods}
                       onChange={(e) => handleInputChange("dislikedFoods", e.target.value)}
+                      className={errors.dislikedFoods ? "border-destructive" : ""}
                     />
+                    {errors.dislikedFoods && <p className="text-sm text-destructive">{errors.dislikedFoods}</p>}
                   </div>
                 </>
               )}
@@ -388,9 +466,13 @@ const HealthProfile = () => {
                         id="targetWeight" 
                         type="number" 
                         placeholder="65"
+                        min={20}
+                        max={500}
                         value={formData.targetWeight}
                         onChange={(e) => handleInputChange("targetWeight", e.target.value)}
+                        className={errors.targetWeight ? "border-destructive" : ""}
                       />
+                      {errors.targetWeight && <p className="text-sm text-destructive">{errors.targetWeight}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="timeline">Timeline</Label>
@@ -413,10 +495,12 @@ const HealthProfile = () => {
                     <Textarea
                       id="additionalNotes"
                       placeholder="Anything else you'd like us to know about your health or nutrition needs..."
+                      maxLength={2000}
                       value={formData.additionalNotes}
                       onChange={(e) => handleInputChange("additionalNotes", e.target.value)}
-                      className="min-h-[100px]"
+                      className={`min-h-[100px] ${errors.additionalNotes ? "border-destructive" : ""}`}
                     />
+                    {errors.additionalNotes && <p className="text-sm text-destructive">{errors.additionalNotes}</p>}
                   </div>
                 </>
               )}
