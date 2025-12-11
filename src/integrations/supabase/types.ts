@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      health_profiles: {
+        Row: {
+          activity_level: string | null
+          additional_notes: string | null
+          age: number | null
+          allergies: string[] | null
+          created_at: string
+          dietary_preferences: string[] | null
+          disliked_foods: string | null
+          gender: string | null
+          goals: string[] | null
+          health_conditions: string[] | null
+          height: number | null
+          id: string
+          medications: string | null
+          target_weight: number | null
+          timeline: string | null
+          updated_at: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          activity_level?: string | null
+          additional_notes?: string | null
+          age?: number | null
+          allergies?: string[] | null
+          created_at?: string
+          dietary_preferences?: string[] | null
+          disliked_foods?: string | null
+          gender?: string | null
+          goals?: string[] | null
+          health_conditions?: string[] | null
+          height?: number | null
+          id?: string
+          medications?: string | null
+          target_weight?: number | null
+          timeline?: string | null
+          updated_at?: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          activity_level?: string | null
+          additional_notes?: string | null
+          age?: number | null
+          allergies?: string[] | null
+          created_at?: string
+          dietary_preferences?: string[] | null
+          disliked_foods?: string | null
+          gender?: string | null
+          goals?: string[] | null
+          health_conditions?: string[] | null
+          height?: number | null
+          id?: string
+          medications?: string | null
+          target_weight?: number | null
+          timeline?: string | null
+          updated_at?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

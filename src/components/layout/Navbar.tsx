@@ -1,9 +1,14 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Leaf } from "lucide-react";
+import { Menu, X, Leaf, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: "Features", href: "#features" },
@@ -12,19 +17,28 @@ const Navbar = () => {
     { name: "Coaching", href: "#coaching" },
   ];
 
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been signed out successfully.",
+    });
+    navigate("/");
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <a href="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-soft">
               <Leaf className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-display font-bold text-xl text-foreground">
               Smart<span className="text-primary">Nutrition</span>
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
@@ -41,12 +55,38 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" className="font-medium">
-              Sign In
-            </Button>
-            <Button className="gradient-primary font-medium shadow-soft hover:shadow-glow transition-shadow">
-              Get Started
-            </Button>
+            {loading ? (
+              <div className="w-20 h-9 bg-muted animate-pulse rounded-md" />
+            ) : user ? (
+              <>
+                <Link to="/health-profile">
+                  <Button variant="ghost" className="font-medium">
+                    My Profile
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline" 
+                  className="font-medium"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost" className="font-medium">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button className="gradient-primary font-medium shadow-soft hover:shadow-glow transition-shadow">
+                    Get Started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -78,12 +118,41 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Button variant="ghost" className="justify-start font-medium">
-                  Sign In
-                </Button>
-                <Button className="gradient-primary font-medium shadow-soft">
-                  Get Started
-                </Button>
+                {loading ? (
+                  <div className="w-full h-9 bg-muted animate-pulse rounded-md" />
+                ) : user ? (
+                  <>
+                    <Link to="/health-profile" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start font-medium">
+                        My Profile
+                      </Button>
+                    </Link>
+                    <Button 
+                      variant="outline" 
+                      className="justify-start font-medium"
+                      onClick={() => {
+                        handleSignOut();
+                        setIsOpen(false);
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/auth" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start font-medium">
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link to="/auth" onClick={() => setIsOpen(false)}>
+                      <Button className="w-full gradient-primary font-medium shadow-soft">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

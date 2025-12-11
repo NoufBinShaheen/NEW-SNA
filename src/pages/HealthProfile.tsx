@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Check, User, Heart, Utensils, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, User, Heart, Utensils, Target, Loader2 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { toast } from "@/hooks/use-toast";
 import { healthProfileSchema, step1Schema, step2Schema, step3Schema, step4Schema } from "@/lib/validations/healthProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const healthConditions = [
   "Diabetes Type 1",
@@ -72,8 +74,11 @@ const goals = [
 
 const HealthProfile = () => {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -93,9 +98,72 @@ const HealthProfile = () => {
     additionalNotes: ""
   });
 
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to create your health profile.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
+
+  // Load existing profile data
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      
+      setIsLoading(true);
+      try {
+        // Load profile for name
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("first_name, last_name")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        // Load health profile
+        const { data: healthProfile } = await supabase
+          .from("health_profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (profile || healthProfile) {
+          setFormData(prev => ({
+            ...prev,
+            firstName: profile?.first_name || "",
+            lastName: profile?.last_name || "",
+            age: healthProfile?.age?.toString() || "",
+            gender: healthProfile?.gender || "",
+            height: healthProfile?.height?.toString() || "",
+            weight: healthProfile?.weight?.toString() || "",
+            activityLevel: healthProfile?.activity_level || "",
+            healthConditions: healthProfile?.health_conditions || [],
+            medications: healthProfile?.medications || "",
+            dietaryPreferences: healthProfile?.dietary_preferences || [],
+            allergies: healthProfile?.allergies || [],
+            dislikedFoods: healthProfile?.disliked_foods || "",
+            goals: healthProfile?.goals || [],
+            targetWeight: healthProfile?.target_weight?.toString() || "",
+            timeline: healthProfile?.timeline || "",
+            additionalNotes: healthProfile?.additional_notes || ""
+          }));
+        }
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
     }
@@ -136,8 +204,9 @@ const HealthProfile = () => {
     return true;
   };
 
-  const handleSubmit = () => {
-    // Final validation of entire form
+  const handleSubmit = async () => {
+    if (!user) return;
+
     const result = healthProfileSchema.safeParse(formData);
     
     if (!result.success) {
@@ -156,11 +225,57 @@ const HealthProfile = () => {
       return;
     }
     
-    toast({
-      title: "Profile Created!",
-      description: "Your health profile has been saved. We'll create your personalized nutrition plan.",
-    });
-    navigate("/");
+    setIsSaving(true);
+    try {
+      // Update profile name
+      await supabase
+        .from("profiles")
+        .update({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+        })
+        .eq("user_id", user.id);
+
+      // Upsert health profile
+      const healthData = {
+        user_id: user.id,
+        age: formData.age ? parseInt(formData.age) : null,
+        gender: formData.gender || null,
+        height: formData.height ? parseFloat(formData.height) : null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        activity_level: formData.activityLevel || null,
+        health_conditions: formData.healthConditions,
+        medications: formData.medications || null,
+        dietary_preferences: formData.dietaryPreferences,
+        allergies: formData.allergies,
+        disliked_foods: formData.dislikedFoods || null,
+        goals: formData.goals,
+        target_weight: formData.targetWeight ? parseFloat(formData.targetWeight) : null,
+        timeline: formData.timeline || null,
+        additional_notes: formData.additionalNotes || null,
+      };
+
+      const { error } = await supabase
+        .from("health_profiles")
+        .upsert(healthData, { onConflict: "user_id" });
+
+      if (error) throw error;
+
+      toast({
+        title: "Profile Saved!",
+        description: "Your health profile has been saved. We'll create your personalized nutrition plan.",
+      });
+      navigate("/");
+    } catch (error: any) {
+      console.error("Error saving profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save your profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const nextStep = () => {
@@ -176,6 +291,20 @@ const HealthProfile = () => {
     { number: 3, title: "Diet", icon: Utensils },
     { number: 4, title: "Goals", icon: Target }
   ];
+
+  // Show loading while checking auth
+  if (authLoading || isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -522,9 +651,17 @@ const HealthProfile = () => {
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 ) : (
-                  <Button onClick={handleSubmit} className="gap-2 bg-primary hover:bg-primary/90">
-                    <Check className="w-4 h-4" />
-                    Create My Plan
+                  <Button 
+                    onClick={handleSubmit} 
+                    className="gap-2 bg-primary hover:bg-primary/90"
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Check className="w-4 h-4" />
+                    )}
+                    {isSaving ? "Saving..." : "Create My Plan"}
                   </Button>
                 )}
               </div>
