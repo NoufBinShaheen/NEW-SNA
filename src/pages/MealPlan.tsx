@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Sparkles, RefreshCw, UtensilsCrossed, Clock, Flame } from "lucide-react";
+import { Loader2, Sparkles, RefreshCw, UtensilsCrossed, Clock, Flame, AlertTriangle, Coffee, Sun, Sunset, Moon, Apple } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import ReactMarkdown from "react-markdown";
 
 const MealPlan = () => {
   const navigate = useNavigate();
@@ -249,27 +250,116 @@ const MealPlan = () => {
 
               {/* Meal Plan Display */}
               {(mealPlan || isGenerating) && (
-                <Card className="border-border/50 shadow-lg">
-                  <CardHeader>
+                <Card className="border-border/50 shadow-lg overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-border/50">
                     <CardTitle className="flex items-center gap-2">
-                      <UtensilsCrossed className="w-5 h-5 text-primary" />
+                      <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                        <UtensilsCrossed className="w-5 h-5 text-primary" />
+                      </div>
                       Your Custom Meal Plan
                     </CardTitle>
                     <CardDescription>
                       Personalized based on your health profile and goals
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="prose prose-sm max-w-none dark:prose-invert">
-                      <div className="whitespace-pre-wrap text-foreground leading-relaxed">
-                        {mealPlan || (
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            AI is crafting your personalized meal plan...
-                          </div>
-                        )}
+                  <CardContent className="p-6">
+                    {mealPlan ? (
+                      <div className="space-y-4">
+                        <ReactMarkdown
+                          components={{
+                            h1: ({ children }) => (
+                              <h1 className="text-2xl font-bold text-foreground mt-6 mb-4 pb-2 border-b border-border/50 flex items-center gap-2">
+                                {children}
+                              </h1>
+                            ),
+                            h2: ({ children }) => (
+                              <div className="mt-8 mb-4">
+                                <h2 className="text-xl font-bold text-foreground flex items-center gap-3 bg-gradient-to-r from-primary/10 to-transparent p-3 rounded-lg">
+                                  <span className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                    <UtensilsCrossed className="w-4 h-4 text-primary" />
+                                  </span>
+                                  {children}
+                                </h2>
+                              </div>
+                            ),
+                            h3: ({ children }) => {
+                              const text = String(children);
+                              let icon = <Coffee className="w-4 h-4" />;
+                              let bgColor = "bg-amber-500/10";
+                              let textColor = "text-amber-600 dark:text-amber-400";
+                              
+                              if (text.toLowerCase().includes("breakfast")) {
+                                icon = <Coffee className="w-4 h-4" />;
+                                bgColor = "bg-amber-500/10";
+                                textColor = "text-amber-600 dark:text-amber-400";
+                              } else if (text.toLowerCase().includes("lunch")) {
+                                icon = <Sun className="w-4 h-4" />;
+                                bgColor = "bg-orange-500/10";
+                                textColor = "text-orange-600 dark:text-orange-400";
+                              } else if (text.toLowerCase().includes("dinner")) {
+                                icon = <Moon className="w-4 h-4" />;
+                                bgColor = "bg-indigo-500/10";
+                                textColor = "text-indigo-600 dark:text-indigo-400";
+                              } else if (text.toLowerCase().includes("snack")) {
+                                icon = <Apple className="w-4 h-4" />;
+                                bgColor = "bg-green-500/10";
+                                textColor = "text-green-600 dark:text-green-400";
+                              }
+                              
+                              return (
+                                <Card className="mt-4 border-border/30 shadow-sm overflow-hidden">
+                                  <CardHeader className={`py-3 px-4 ${bgColor}`}>
+                                    <h3 className={`text-base font-semibold flex items-center gap-2 ${textColor}`}>
+                                      {icon}
+                                      {children}
+                                    </h3>
+                                  </CardHeader>
+                                </Card>
+                              );
+                            },
+                            p: ({ children }) => {
+                              const text = String(children);
+                              if (text.includes("IMPORTANT") || text.includes("🚨")) {
+                                return (
+                                  <Card className="my-4 border-amber-500/30 bg-amber-500/5">
+                                    <CardContent className="p-4 flex gap-3">
+                                      <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                                      <p className="text-sm text-foreground/90 leading-relaxed">{children}</p>
+                                    </CardContent>
+                                  </Card>
+                                );
+                              }
+                              return <p className="text-foreground/80 leading-relaxed my-3">{children}</p>;
+                            },
+                            ul: ({ children }) => (
+                              <ul className="space-y-2 my-3 ml-1">{children}</ul>
+                            ),
+                            li: ({ children }) => (
+                              <li className="flex items-start gap-3 text-foreground/80">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                                <span className="leading-relaxed">{children}</span>
+                              </li>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-semibold text-foreground">{children}</strong>
+                            ),
+                            em: ({ children }) => (
+                              <em className="text-muted-foreground italic">{children}</em>
+                            ),
+                            hr: () => (
+                              <hr className="my-6 border-border/50" />
+                            ),
+                          }}
+                        >
+                          {mealPlan}
+                        </ReactMarkdown>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-3 py-12 text-muted-foreground">
+                        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                        <span>AI is crafting your personalized meal plan...</span>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
