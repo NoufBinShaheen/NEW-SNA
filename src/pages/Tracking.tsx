@@ -33,6 +33,7 @@ const Tracking = () => {
   const [newFood, setNewFood] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "" });
   const [waterIntake, setWaterIntake] = useState(0);
   const [waterToAdd, setWaterToAdd] = useState("");
+  const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -41,26 +42,65 @@ const Tracking = () => {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    const loadProfile = async () => {
+    const loadData = async () => {
       if (!user) return;
       
       try {
-        const { data } = await supabase
-          .from("health_profiles")
-          .select("*")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        // Load health profile and daily tracking in parallel
+        const [profileResult, trackingResult] = await Promise.all([
+          supabase
+            .from("health_profiles")
+            .select("*")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          supabase
+            .from("daily_tracking")
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("date", today)
+            .maybeSingle()
+        ]);
         
-        setHealthProfile(data);
+        setHealthProfile(profileResult.data);
+        
+        if (trackingResult.data) {
+          setFoodEntries(trackingResult.data.food_entries as unknown as FoodEntry[]);
+          setWaterIntake(trackingResult.data.water_intake);
+        }
       } catch (error) {
-        console.error("Error loading profile:", error);
+        console.error("Error loading data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadProfile();
-  }, [user]);
+    loadData();
+  }, [user, today]);
+
+  // Save tracking data whenever it changes
+  useEffect(() => {
+    const saveTracking = async () => {
+      if (!user || isLoading) return;
+      
+      try {
+        await supabase
+          .from("daily_tracking")
+          .upsert(
+            {
+              user_id: user.id,
+              date: today,
+              food_entries: JSON.parse(JSON.stringify(foodEntries)),
+              water_intake: waterIntake
+            }, 
+            { onConflict: 'user_id,date' }
+          );
+      } catch (error) {
+        console.error("Error saving tracking:", error);
+      }
+    };
+
+    saveTracking();
+  }, [user, foodEntries, waterIntake, today, isLoading]);
 
   const calculateDailyCalories = () => {
     if (!healthProfile?.height || !healthProfile?.weight || !healthProfile?.age || !healthProfile?.gender) return 2000;
