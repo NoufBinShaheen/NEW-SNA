@@ -1,0 +1,122 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Utensils, Target, Activity, MessageCircle, ClipboardList, ArrowRight } from "lucide-react";
+
+const options = [
+  {
+    id: "health-profile",
+    title: "Set Up Health Profile",
+    description: "Tell us about yourself, your goals, and any health conditions",
+    icon: ClipboardList,
+    path: "/health-profile",
+    recommended: true,
+  },
+  {
+    id: "meal-plan",
+    title: "Get AI Meal Plan",
+    description: "Receive personalized meal recommendations based on your needs",
+    icon: Utensils,
+    path: "/meal-plan",
+  },
+  {
+    id: "tracking",
+    title: "Track Your Food",
+    description: "Log meals and monitor your daily nutrition intake",
+    icon: Target,
+    path: "/tracking",
+  },
+  {
+    id: "coach",
+    title: "Talk to AI Coach",
+    description: "Get personalized nutrition advice and guidance",
+    icon: MessageCircle,
+    path: "/coach",
+  },
+  {
+    id: "dashboard",
+    title: "View Dashboard",
+    description: "See your progress, stats, and nutrition insights",
+    icon: Activity,
+    path: "/dashboard",
+  },
+];
+
+export default function Onboarding() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+
+  const handleContinue = () => {
+    if (selectedOption) {
+      const option = options.find((o) => o.id === selectedOption);
+      if (option) {
+        navigate(option.path);
+      }
+    }
+  };
+
+  const firstName = user?.user_metadata?.first_name || "there";
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+      <div className="max-w-4xl w-full">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+            Welcome, {firstName}! 👋
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            What would you like to do today?
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {options.map((option) => (
+            <Card
+              key={option.id}
+              className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
+                selectedOption === option.id
+                  ? "ring-2 ring-primary border-primary bg-primary/5"
+                  : "hover:border-primary/50"
+              }`}
+              onClick={() => setSelectedOption(option.id)}
+            >
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className={`p-2 rounded-lg ${
+                    selectedOption === option.id ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+                  }`}>
+                    <option.icon className="h-5 w-5" />
+                  </div>
+                  {option.recommended && (
+                    <span className="text-xs bg-accent text-accent-foreground px-2 py-1 rounded-full">
+                      Recommended
+                    </span>
+                  )}
+                </div>
+                <CardTitle className="text-lg mt-2">{option.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription>{option.description}</CardDescription>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="flex justify-center">
+          <Button
+            size="lg"
+            onClick={handleContinue}
+            disabled={!selectedOption}
+            className="min-w-[200px]"
+          >
+            Continue
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

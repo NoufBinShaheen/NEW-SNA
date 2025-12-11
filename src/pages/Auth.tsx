@@ -34,7 +34,7 @@ const Auth = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/onboarding");
     }
   }, [user, navigate]);
 
@@ -80,7 +80,7 @@ const Auth = () => {
         title: "Welcome back!",
         description: "You have successfully signed in.",
       });
-      navigate("/");
+      navigate("/onboarding");
     }
   };
 
@@ -128,7 +128,7 @@ const Auth = () => {
         title: "Account Created!",
         description: "Welcome to Smart Nutrition Assistant.",
       });
-      navigate("/");
+      navigate("/onboarding");
     }
   };
 
