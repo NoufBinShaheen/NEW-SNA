@@ -1,5 +1,6 @@
 import { Heart, Droplets, Activity, Pill, Scale, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const conditions = [
   {
@@ -59,9 +60,11 @@ const ConditionsSection = () => {
               our AI creates nutrition plans backed by medical research and personalized 
               to your specific requirements.
             </p>
-            <Button size="lg" className="gradient-primary font-semibold shadow-soft">
-              Find Your Plan
-            </Button>
+            <Link to="/health-profile">
+              <Button size="lg" className="gradient-primary font-semibold shadow-soft">
+                Find Your Plan
+              </Button>
+            </Link>
           </div>
 
           {/* Conditions Grid */}

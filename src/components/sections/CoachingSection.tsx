@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Video, Phone, Calendar, CheckCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const coachingFeatures = [
   "Unlimited AI chat support 24/7",
@@ -101,9 +102,11 @@ const CoachingSection = () => {
               ))}
             </ul>
 
-            <Button size="lg" className="gradient-secondary font-semibold shadow-soft">
-              Meet Your Coach
-            </Button>
+            <Link to="/coach">
+              <Button size="lg" className="gradient-secondary font-semibold shadow-soft">
+                Meet Your Coach
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

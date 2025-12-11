@@ -39,7 +39,12 @@ const HeroSection = () => {
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="font-semibold border-2">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="font-semibold border-2"
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 Learn More
               </Button>
             </div>

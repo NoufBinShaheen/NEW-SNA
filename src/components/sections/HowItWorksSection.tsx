@@ -1,4 +1,5 @@
 import { ClipboardCheck, Cpu, UtensilsCrossed, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const steps = [
   {
@@ -6,24 +7,28 @@ const steps = [
     icon: ClipboardCheck,
     title: "Complete Your Profile",
     description: "Share your health goals, dietary preferences, allergies, and any medical conditions for personalized recommendations.",
+    link: "/health-profile",
   },
   {
     number: "02",
     icon: Cpu,
     title: "AI Analyzes Your Data",
     description: "Our advanced AI processes your information against thousands of nutritional studies and guidelines.",
+    link: "/meal-plan",
   },
   {
     number: "03",
     icon: UtensilsCrossed,
     title: "Receive Custom Plans",
     description: "Get personalized meal plans, recipes, and shopping lists tailored specifically to your needs.",
+    link: "/meal-plan",
   },
   {
     number: "04",
     icon: TrendingUp,
     title: "Track & Optimize",
     description: "Monitor your progress and receive adaptive recommendations as your health improves.",
+    link: "/tracking",
   },
 ];
 
@@ -50,15 +55,15 @@ const HowItWorksSection = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => (
-              <div key={step.number} className="relative">
-                <div className="bg-card rounded-2xl p-6 border border-border h-full relative z-10 hover:shadow-card transition-shadow">
+              <Link key={step.number} to={step.link} className="relative group">
+                <div className="bg-card rounded-2xl p-6 border border-border h-full relative z-10 hover:shadow-card transition-all hover:-translate-y-1 cursor-pointer">
                   {/* Step Number */}
                   <div className="absolute -top-4 left-6 px-3 py-1 gradient-primary rounded-lg">
                     <span className="font-display font-bold text-primary-foreground">{step.number}</span>
                   </div>
                   
                   <div className="pt-4">
-                    <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center mb-4">
+                    <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
                       <step.icon className="w-7 h-7 text-primary" />
                     </div>
                     <h3 className="font-display text-xl font-semibold text-foreground mb-3">
@@ -69,7 +74,7 @@ const HowItWorksSection = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
