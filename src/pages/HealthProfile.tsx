@@ -31,6 +31,21 @@ const healthConditions = [
   "None"
 ];
 
+const medicationRecommendations: Record<string, string[]> = {
+  "Diabetes Type 1": ["Insulin (Humalog, Novolog)", "Metformin", "Pramlintide (Symlin)"],
+  "Diabetes Type 2": ["Metformin", "Glipizide", "Sitagliptin (Januvia)", "Empagliflozin (Jardiance)"],
+  "High Blood Pressure": ["Lisinopril", "Amlodipine", "Losartan", "Hydrochlorothiazide"],
+  "Low Blood Pressure": ["Fludrocortisone", "Midodrine", "Droxidopa (Northera)"],
+  "Heart Disease": ["Aspirin", "Beta-blockers (Metoprolol)", "Statins (Atorvastatin)", "ACE inhibitors"],
+  "High Cholesterol": ["Atorvastatin (Lipitor)", "Rosuvastatin (Crestor)", "Ezetimibe (Zetia)"],
+  "Kidney Disease": ["ACE inhibitors", "ARBs (Losartan)", "Erythropoietin", "Phosphate binders"],
+  "Celiac Disease": ["Gluten-free diet (no medication)", "Vitamin supplements", "Dapsone (for dermatitis)"],
+  "IBS/IBD": ["Loperamide", "Mesalamine", "Rifaximin", "Probiotics"],
+  "PCOS": ["Metformin", "Spironolactone", "Birth control pills", "Clomiphene"],
+  "Thyroid Disorder": ["Levothyroxine (Synthroid)", "Methimazole", "Propylthiouracil"],
+  "Obesity": ["Orlistat (Xenical)", "Liraglutide (Saxenda)", "Semaglutide (Wegovy)", "Phentermine"],
+};
+
 const dietaryPreferences = [
   "Vegetarian",
   "Vegan",
@@ -498,6 +513,36 @@ const HealthProfile = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="medications">Current Medications (optional)</Label>
+                    
+                    {/* Medication Recommendations */}
+                    {formData.healthConditions.filter(c => c !== "None" && medicationRecommendations[c]).length > 0 && (
+                      <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                        <p className="text-sm font-medium text-primary">
+                          💊 Common medications for your conditions:
+                        </p>
+                        {formData.healthConditions
+                          .filter(c => c !== "None" && medicationRecommendations[c])
+                          .map(condition => (
+                            <div key={condition} className="space-y-1">
+                              <p className="text-xs font-semibold text-foreground">{condition}:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {medicationRecommendations[condition].map(med => (
+                                  <span 
+                                    key={med} 
+                                    className="text-xs bg-background px-2 py-1 rounded border border-border text-muted-foreground"
+                                  >
+                                    {med}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        <p className="text-xs text-muted-foreground italic">
+                          Note: Always consult your doctor before taking any medication.
+                        </p>
+                      </div>
+                    )}
+                    
                     <Textarea
                       id="medications"
                       placeholder="List any medications you're currently taking..."
