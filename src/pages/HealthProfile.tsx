@@ -19,7 +19,7 @@ const healthConditions = [
   "Diabetes Type 1",
   "Diabetes Type 2",
   "Hypertension",
-  "Low Blood Pressure",
+  
   "Heart Disease",
   "High Cholesterol",
   "Kidney Disease",
@@ -35,7 +35,7 @@ const medicationRecommendations: Record<string, string[]> = {
   "Diabetes Type 1": ["Insulin (Humalog, Novolog)", "Metformin", "Pramlintide (Symlin)"],
   "Diabetes Type 2": ["Metformin", "Glipizide", "Sitagliptin (Januvia)", "Empagliflozin (Jardiance)"],
   "Hypertension": ["Lisinopril", "Amlodipine", "Losartan", "Hydrochlorothiazide"],
-  "Low Blood Pressure": ["Fludrocortisone", "Midodrine", "Droxidopa (Northera)"],
+  
   "Heart Disease": ["Aspirin", "Beta-blockers (Metoprolol)", "Statins (Atorvastatin)", "ACE inhibitors"],
   "High Cholesterol": ["Atorvastatin (Lipitor)", "Rosuvastatin (Crestor)", "Ezetimibe (Zetia)"],
   "Kidney Disease": ["ACE inhibitors", "ARBs (Losartan)", "Erythropoietin", "Phosphate binders"],
