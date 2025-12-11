@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { User, Mail, Calendar, Settings, Shield, Bell, Camera, Loader2 } from "lucide-react";
+import { User, Mail, Calendar, Shield, Bell, Camera, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -433,43 +433,6 @@ const Account = () => {
                   {savingNotifications && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Save Notification Settings
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-primary" />
-                  Quick Actions
-                </CardTitle>
-                <CardDescription>
-                  Access other account settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <Button 
-                    variant="outline" 
-                    className="justify-start h-auto py-4"
-                    onClick={() => navigate("/health-profile")}
-                  >
-                    <div className="text-left">
-                      <p className="font-medium">Health Profile</p>
-                      <p className="text-sm text-muted-foreground">Update your health information</p>
-                    </div>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="justify-start h-auto py-4"
-                    onClick={() => navigate("/dashboard")}
-                  >
-                    <div className="text-left">
-                      <p className="font-medium">Dashboard</p>
-                      <p className="text-sm text-muted-foreground">View your nutrition overview</p>
-                    </div>
-                  </Button>
-                </div>
               </CardContent>
             </Card>
           </div>
