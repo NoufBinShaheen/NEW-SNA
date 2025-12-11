@@ -227,21 +227,21 @@ const Tracking = () => {
                   }).map(d => new Date(d.date + 'T00:00:00'))
                 }} modifiersStyles={{
                   logged: {
-                    backgroundColor: 'hsl(var(--primary) / 0.2)',
+                    backgroundColor: 'hsl(var(--primary) / 0.5)',
                     borderRadius: '50%'
                   },
                   complete: {
-                    backgroundColor: 'hsl(142.1 76.2% 36.3% / 0.3)',
+                    backgroundColor: 'hsl(142.1 76.2% 36.3% / 0.7)',
                     borderRadius: '50%'
                   }
                 }} />
                   <div className="p-3 border-t border-border text-xs text-muted-foreground">
                     <div className="flex items-center gap-2 mb-1">
-                      <div className="w-3 h-3 rounded-full bg-primary/20" />
+                      <div className="w-3 h-3 rounded-full bg-primary/50" />
                       <span>Has logged entries</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-[#1a9748]/[0.81]" />
+                      <div className="w-3 h-3 rounded-full bg-green-600" />
                       <span>Completed (≥80% calories)</span>
                     </div>
                   </div>
