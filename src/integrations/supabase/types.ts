@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_tracking: {
+        Row: {
+          created_at: string
+          date: string
+          food_entries: Json
+          id: string
+          updated_at: string
+          user_id: string
+          water_intake: number
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          food_entries?: Json
+          id?: string
+          updated_at?: string
+          user_id: string
+          water_intake?: number
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          food_entries?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
+          water_intake?: number
+        }
+        Relationships: []
+      }
       health_profiles: {
         Row: {
           activity_level: string | null
