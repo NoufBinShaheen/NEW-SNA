@@ -505,7 +505,7 @@ const Dashboard = () => {
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
                         <Flame className="w-6 h-6 text-primary" />
                       </div>
-                      <p className="text-2xl font-bold text-foreground">{dailyCalories || "—"}</p>
+                      <p className="text-2xl font-bold text-foreground">{dailyCalories || 2000}</p>
                       <p className="text-sm text-muted-foreground">Calories</p>
                     </div>
                     <div className="text-center">
@@ -513,7 +513,7 @@ const Dashboard = () => {
                         <span className="text-xl">🥩</span>
                       </div>
                       <p className="text-2xl font-bold text-foreground">
-                        {dailyCalories ? Math.round(dailyCalories * 0.25 / 4) : "—"}g
+                        {targetProtein || Math.round(2000 * 0.25 / 4)}g
                       </p>
                       <p className="text-sm text-muted-foreground">Protein</p>
                     </div>
@@ -522,7 +522,7 @@ const Dashboard = () => {
                         <span className="text-xl">🍞</span>
                       </div>
                       <p className="text-2xl font-bold text-foreground">
-                        {dailyCalories ? Math.round(dailyCalories * 0.45 / 4) : "—"}g
+                        {targetCarbs || Math.round(2000 * 0.45 / 4)}g
                       </p>
                       <p className="text-sm text-muted-foreground">Carbs</p>
                     </div>
@@ -531,7 +531,7 @@ const Dashboard = () => {
                         <Droplets className="w-6 h-6 text-destructive" />
                       </div>
                       <p className="text-2xl font-bold text-foreground">
-                        {dailyCalories ? Math.round(dailyCalories * 0.30 / 9) : "—"}g
+                        {targetFat || Math.round(2000 * 0.30 / 9)}g
                       </p>
                       <p className="text-sm text-muted-foreground">Fat</p>
                     </div>
