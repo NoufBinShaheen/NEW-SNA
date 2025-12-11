@@ -122,7 +122,7 @@ const HeroSection = () => {
                 </div>
               </div>
 
-              <div className="absolute -bottom-4 -left-6 bg-card rounded-2xl p-4 shadow-card border border-border animate-float" style={{ animationDelay: "1s" }}>
+              <div className="absolute -bottom-8 -left-10 bg-card rounded-2xl p-4 shadow-card border border-border animate-float" style={{ animationDelay: "1s" }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                     <Sparkles className="w-5 h-5 text-primary" />
