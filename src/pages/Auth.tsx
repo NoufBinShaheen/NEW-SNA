@@ -314,7 +314,7 @@ const Auth = () => {
                           <Input
                             id="phone"
                             type="tel"
-                            placeholder="+966512345678"
+                            placeholder="+966 512345678"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
                             className={errors.phone ? "border-destructive" : ""}
