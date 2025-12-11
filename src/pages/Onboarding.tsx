@@ -61,7 +61,7 @@ export default function Onboarding() {
       <div className="max-w-4xl w-full">
         {/* Top Navigation */}
         <div className="flex items-center justify-between mb-6">
-          {/* Logo and Nav Buttons */}
+          {/* Logo and Dashboard */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
               <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-soft">
@@ -71,23 +71,23 @@ export default function Onboarding() {
                 Smart<span className="text-primary">NutriAssistant</span>
               </span>
             </div>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                Dashboard
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/account")}>
-                <User className="w-4 h-4 mr-2" />
-                Account
-              </Button>
-            </div>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+              <LayoutDashboard className="w-4 h-4 mr-2" />
+              Dashboard
+            </Button>
           </div>
 
-          {/* Sign Out Button */}
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          {/* Account and Sign Out */}
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/account")}>
+              <User className="w-4 h-4 mr-2" />
+              Account
+            </Button>
+            <Button variant="outline" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         <div className="text-center mb-8">
