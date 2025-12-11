@@ -12,7 +12,7 @@ import ReactMarkdown from "react-markdown";
 
 const MealPlan = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const [healthProfile, setHealthProfile] = useState<any>(null);
   const [mealPlan, setMealPlan] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -67,7 +67,7 @@ const MealPlan = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${session?.access_token}`,
           },
           body: JSON.stringify({ healthProfile, type: "meal-plan" }),
         }

@@ -20,7 +20,7 @@ interface Message {
 
 const Coach = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const [healthProfile, setHealthProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
@@ -80,7 +80,7 @@ const Coach = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${session?.access_token}`,
           },
           body: JSON.stringify({ 
             healthProfile: { ...healthProfile, message: input }, 
