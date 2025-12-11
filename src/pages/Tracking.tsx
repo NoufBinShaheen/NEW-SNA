@@ -242,7 +242,7 @@ const Tracking = () => {
               <CardDescription>Track what you eat throughout the day</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
                 <Input
                   placeholder="Food name"
                   value={newFood.name}
@@ -266,6 +266,12 @@ const Tracking = () => {
                   type="number"
                   value={newFood.carbs}
                   onChange={(e) => setNewFood({ ...newFood, carbs: e.target.value })}
+                />
+                <Input
+                  placeholder="Fat (g)"
+                  type="number"
+                  value={newFood.fat}
+                  onChange={(e) => setNewFood({ ...newFood, fat: e.target.value })}
                 />
                 <Button onClick={addFoodEntry} className="gap-2">
                   <Plus className="w-4 h-4" />
