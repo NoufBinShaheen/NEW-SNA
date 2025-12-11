@@ -253,9 +253,10 @@ const HealthProfile = () => {
         .eq("user_id", user.id);
 
       // Upsert health profile
+      const ageValue = formData.age ? parseInt(formData.age, 10) : null;
       const healthData = {
         user_id: user.id,
-        age: formData.age ? parseInt(formData.age) : null,
+        age: ageValue && !isNaN(ageValue) ? ageValue : null,
         gender: formData.gender || null,
         height: formData.height ? parseFloat(formData.height) : null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
