@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { 
-  Loader2, Send, Sparkles, MessageCircle, Bot, User
+  Loader2, Send, MessageCircle, Bot, User, AlertTriangle, Lightbulb, CheckCircle2
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "user" | "assistant";
@@ -210,10 +211,72 @@ const Coach = () => {
                     className={`max-w-[80%] rounded-2xl p-4 ${
                       message.role === "user"
                         ? "bg-primary text-primary-foreground rounded-tr-sm"
-                        : "bg-muted text-foreground rounded-tl-sm"
+                        : "bg-muted/50 text-foreground rounded-tl-sm border border-border/50"
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    {message.role === "user" ? (
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    ) : (
+                      <div className="prose prose-sm max-w-none dark:prose-invert">
+                        <ReactMarkdown
+                          components={{
+                            h1: ({ children }) => (
+                              <h1 className="text-lg font-bold text-foreground mt-3 mb-2 first:mt-0">{children}</h1>
+                            ),
+                            h2: ({ children }) => (
+                              <h2 className="text-base font-semibold text-foreground mt-3 mb-2 flex items-center gap-2">
+                                <Lightbulb className="w-4 h-4 text-primary" />
+                                {children}
+                              </h2>
+                            ),
+                            h3: ({ children }) => (
+                              <h3 className="text-sm font-semibold text-foreground mt-2 mb-1">{children}</h3>
+                            ),
+                            p: ({ children }) => {
+                              const text = String(children);
+                              if (text.includes("IMPORTANT") || text.includes("⚠") || text.includes("🚨")) {
+                                return (
+                                  <div className="my-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg flex gap-2">
+                                    <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                                    <span className="text-sm text-foreground/90">{children}</span>
+                                  </div>
+                                );
+                              }
+                              return <p className="text-foreground/80 leading-relaxed my-2 first:mt-0 last:mb-0">{children}</p>;
+                            },
+                            ul: ({ children }) => (
+                              <ul className="space-y-1.5 my-2">{children}</ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol className="space-y-1.5 my-2 list-none">{children}</ol>
+                            ),
+                            li: ({ children, ...props }) => {
+                              const index = props.node?.position?.start?.line;
+                              return (
+                                <li className="flex items-start gap-2 text-foreground/80">
+                                  <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 text-xs font-medium mt-0.5">
+                                    {typeof index === 'number' ? <CheckCircle2 className="w-3 h-3" /> : <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                                  </span>
+                                  <span className="leading-relaxed">{children}</span>
+                                </li>
+                              );
+                            },
+                            strong: ({ children }) => (
+                              <strong className="font-semibold text-foreground">{children}</strong>
+                            ),
+                            em: ({ children }) => (
+                              <em className="text-muted-foreground">{children}</em>
+                            ),
+                            code: ({ children }) => (
+                              <code className="px-1.5 py-0.5 bg-primary/10 text-primary rounded text-xs font-mono">{children}</code>
+                            ),
+                            hr: () => <hr className="my-3 border-border/50" />,
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
