@@ -19,7 +19,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { User, Mail, Calendar, Shield, Bell, Camera, Loader2, Trash2 } from "lucide-react";
+import { User, Mail, Calendar, Shield, Bell, Camera, Loader2, Trash2, UserX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -33,7 +33,7 @@ interface Profile {
 }
 
 const Account = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, session } = useAuth();
   const navigate = useNavigate();
   
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -55,6 +55,7 @@ const Account = () => {
   const [savingNotifications, setSavingNotifications] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -281,6 +282,38 @@ const Account = () => {
       toast.error("Failed to delete data: " + error.message);
     } finally {
       setDeletingData(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user || !session) return;
+    
+    setDeletingAccount(true);
+    
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete account");
+      }
+
+      toast.success("Your account has been deleted");
+      navigate("/");
+    } catch (error: any) {
+      toast.error("Failed to delete account: " + error.message);
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -540,6 +573,51 @@ const Account = () => {
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
                         Yes, delete my data
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </CardContent>
+            </Card>
+
+            {/* Delete Account */}
+            <Card className="border-destructive/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <UserX className="w-5 h-5" />
+                  Delete Account
+                </CardTitle>
+                <CardDescription>
+                  Permanently delete your account and all associated data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  This action will permanently delete your account and all your data. 
+                  You will be logged out and will not be able to recover your account.
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={deletingAccount}>
+                      {deletingAccount && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      Delete My Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action is permanent and cannot be undone. Your account and all associated 
+                        data will be permanently deleted.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteAccount}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Yes, delete my account
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
