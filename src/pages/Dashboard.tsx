@@ -267,7 +267,7 @@ const Dashboard = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Daily Calories</p>
                       <p className="text-lg font-semibold text-foreground">
-                        {dailyCalories ? `${dailyCalories} kcal` : "—"}
+                        {dailyCalories || 2000} kcal
                       </p>
                     </div>
                   </CardContent>
