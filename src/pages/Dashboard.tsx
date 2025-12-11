@@ -35,6 +35,21 @@ interface Profile {
   last_name: string | null;
 }
 
+interface FoodEntry {
+  id: string;
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  time: string;
+}
+
+interface DailyTracking {
+  food_entries: FoodEntry[];
+  water_intake: number;
+}
+
 const activityLevelLabels: Record<string, string> = {
   sedentary: "Sedentary",
   light: "Lightly Active",
@@ -56,7 +71,9 @@ const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [healthProfile, setHealthProfile] = useState<HealthProfile | null>(null);
+  const [dailyTracking, setDailyTracking] = useState<DailyTracking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -69,13 +86,21 @@ const Dashboard = () => {
       if (!user) return;
       
       try {
-        const [profileRes, healthRes] = await Promise.all([
+        const [profileRes, healthRes, trackingRes] = await Promise.all([
           supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
-          supabase.from("health_profiles").select("*").eq("user_id", user.id).maybeSingle()
+          supabase.from("health_profiles").select("*").eq("user_id", user.id).maybeSingle(),
+          supabase.from("daily_tracking").select("*").eq("user_id", user.id).eq("date", today).maybeSingle()
         ]);
 
         setProfile(profileRes.data);
         setHealthProfile(healthRes.data);
+        
+        if (trackingRes.data) {
+          setDailyTracking({
+            food_entries: trackingRes.data.food_entries as unknown as FoodEntry[],
+            water_intake: trackingRes.data.water_intake
+          });
+        }
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -84,7 +109,7 @@ const Dashboard = () => {
     };
 
     loadData();
-  }, [user]);
+  }, [user, today]);
 
   // Calculate BMI
   const calculateBMI = () => {
@@ -118,6 +143,18 @@ const Dashboard = () => {
 
   const bmi = calculateBMI();
   const dailyCalories = calculateCalories();
+  
+  // Calculate consumed totals from today's tracking
+  const consumedCalories = dailyTracking?.food_entries?.reduce((sum, e) => sum + e.calories, 0) || 0;
+  const consumedProtein = dailyTracking?.food_entries?.reduce((sum, e) => sum + e.protein, 0) || 0;
+  const consumedCarbs = dailyTracking?.food_entries?.reduce((sum, e) => sum + e.carbs, 0) || 0;
+  const consumedFat = dailyTracking?.food_entries?.reduce((sum, e) => sum + e.fat, 0) || 0;
+  const waterIntake = dailyTracking?.water_intake || 0;
+  
+  // Target macros
+  const targetProtein = dailyCalories ? Math.round(dailyCalories * 0.25 / 4) : 0;
+  const targetCarbs = dailyCalories ? Math.round(dailyCalories * 0.45 / 4) : 0;
+  const targetFat = dailyCalories ? Math.round(dailyCalories * 0.30 / 9) : 0;
 
   if (authLoading || isLoading) {
     return (
@@ -236,6 +273,89 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Today's Progress */}
+              <Card className="border-border/50 shadow-lg mb-8">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-primary" />
+                      <CardTitle className="text-lg">Today's Progress</CardTitle>
+                    </div>
+                    <Link to="/tracking">
+                      <Button variant="ghost" size="sm" className="text-primary">
+                        View Details
+                      </Button>
+                    </Link>
+                  </div>
+                  <CardDescription>
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {/* Calories */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Flame className="w-4 h-4 text-primary" />
+                        <span className="text-sm text-muted-foreground">Calories</span>
+                      </div>
+                      <p className="text-lg font-bold text-foreground">
+                        {consumedCalories} <span className="text-sm font-normal text-muted-foreground">/ {dailyCalories || 0}</span>
+                      </p>
+                      <Progress value={dailyCalories ? (consumedCalories / dailyCalories) * 100 : 0} className="h-2" />
+                    </div>
+                    
+                    {/* Protein */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">🥩</span>
+                        <span className="text-sm text-muted-foreground">Protein</span>
+                      </div>
+                      <p className="text-lg font-bold text-foreground">
+                        {consumedProtein}g <span className="text-sm font-normal text-muted-foreground">/ {targetProtein}g</span>
+                      </p>
+                      <Progress value={targetProtein ? (consumedProtein / targetProtein) * 100 : 0} className="h-2" />
+                    </div>
+                    
+                    {/* Carbs */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">🍞</span>
+                        <span className="text-sm text-muted-foreground">Carbs</span>
+                      </div>
+                      <p className="text-lg font-bold text-foreground">
+                        {consumedCarbs}g <span className="text-sm font-normal text-muted-foreground">/ {targetCarbs}g</span>
+                      </p>
+                      <Progress value={targetCarbs ? (consumedCarbs / targetCarbs) * 100 : 0} className="h-2" />
+                    </div>
+                    
+                    {/* Fat */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">🥑</span>
+                        <span className="text-sm text-muted-foreground">Fat</span>
+                      </div>
+                      <p className="text-lg font-bold text-foreground">
+                        {consumedFat}g <span className="text-sm font-normal text-muted-foreground">/ {targetFat}g</span>
+                      </p>
+                      <Progress value={targetFat ? (consumedFat / targetFat) * 100 : 0} className="h-2" />
+                    </div>
+                    
+                    {/* Water */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Droplets className="w-4 h-4 text-secondary" />
+                        <span className="text-sm text-muted-foreground">Water</span>
+                      </div>
+                      <p className="text-lg font-bold text-foreground">
+                        {waterIntake} <span className="text-sm font-normal text-muted-foreground">/ 2000 ml</span>
+                      </p>
+                      <Progress value={(waterIntake / 2000) * 100} className="h-2" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Health Conditions */}
