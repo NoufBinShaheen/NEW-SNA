@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Leaf, LogOut, User } from "lucide-react";
+import { Menu, X, Leaf, LogOut, User, Home, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
@@ -47,11 +47,13 @@ const Navbar = () => {
                 <>
                   <Link to="/">
                     <Button variant="ghost" className="font-medium">
+                      <Home className="w-4 h-4 mr-2" />
                       Home
                     </Button>
                   </Link>
                   <Link to="/dashboard">
                     <Button variant="ghost" className="font-medium">
+                      <LayoutDashboard className="w-4 h-4 mr-2" />
                       Dashboard
                     </Button>
                   </Link>
@@ -143,11 +145,13 @@ const Navbar = () => {
                   <>
                     <Link to="/" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start font-medium">
+                        <Home className="w-4 h-4 mr-2" />
                         Home
                       </Button>
                     </Link>
                     <Link to="/dashboard" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start font-medium">
+                        <LayoutDashboard className="w-4 h-4 mr-2" />
                         Dashboard
                       </Button>
                     </Link>
