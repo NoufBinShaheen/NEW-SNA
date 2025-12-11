@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Utensils, Target, Activity, MessageCircle, ClipboardList, User, LayoutDashboard, LogOut, Leaf } from "lucide-react";
 import { toast } from "sonner";
+import { useCoachReminders } from "@/hooks/useCoachReminders";
 
 const options = [
   {
@@ -47,6 +48,9 @@ const options = [
 export default function Onboarding() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  
+  // Initialize coach reminders - will show in-app toast if reminder is due
+  useCoachReminders(user?.id);
 
   const firstName = user?.user_metadata?.first_name || "there";
 

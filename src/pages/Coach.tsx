@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import { useCoachReminders } from "@/hooks/useCoachReminders";
 
 interface Message {
   role: "user" | "assistant";
@@ -21,6 +22,7 @@ interface Message {
 const Coach = () => {
   const navigate = useNavigate();
   const { user, session, loading: authLoading } = useAuth();
+  const { updateLastCoachSession, requestPushPermission } = useCoachReminders(user?.id);
   const [healthProfile, setHealthProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
@@ -254,6 +256,9 @@ const Coach = () => {
       if (shouldPlayVoice && assistantContent) {
         playVoiceResponse(assistantContent);
       }
+
+      // Update last coach session timestamp
+      updateLastCoachSession();
     } catch (error: any) {
       console.error("Error sending message:", error);
       toast({
@@ -269,6 +274,13 @@ const Coach = () => {
       setIsTyping(false);
     }
   };
+
+  // Request push notification permission on mount
+  useEffect(() => {
+    if (user) {
+      requestPushPermission();
+    }
+  }, [user, requestPushPermission]);
 
   if (authLoading || isLoading) {
     return (
