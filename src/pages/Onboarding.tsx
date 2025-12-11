@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Utensils, Target, Activity, MessageCircle, ClipboardList, ArrowRight } from "lucide-react";
+import { Utensils, Target, Activity, MessageCircle, ClipboardList } from "lucide-react";
 
 const options = [
   {
@@ -47,16 +45,6 @@ const options = [
 export default function Onboarding() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-
-  const handleContinue = () => {
-    if (selectedOption) {
-      const option = options.find((o) => o.id === selectedOption);
-      if (option) {
-        navigate(option.path);
-      }
-    }
-  };
 
   const firstName = user?.user_metadata?.first_name || "there";
 
@@ -72,22 +60,16 @@ export default function Onboarding() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {options.map((option) => (
             <Card
               key={option.id}
-              className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
-                selectedOption === option.id
-                  ? "ring-2 ring-primary border-primary bg-primary/5"
-                  : "hover:border-primary/50"
-              }`}
-              onClick={() => setSelectedOption(option.id)}
+              className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50"
+              onClick={() => navigate(option.path)}
             >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <div className={`p-2 rounded-lg ${
-                    selectedOption === option.id ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-                  }`}>
+                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
                     <option.icon className="h-5 w-5" />
                   </div>
                   {option.recommended && (
@@ -103,18 +85,6 @@ export default function Onboarding() {
               </CardContent>
             </Card>
           ))}
-        </div>
-
-        <div className="flex justify-center">
-          <Button
-            size="lg"
-            onClick={handleContinue}
-            disabled={!selectedOption}
-            className="min-w-[200px]"
-          >
-            Continue
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
         </div>
       </div>
     </div>
