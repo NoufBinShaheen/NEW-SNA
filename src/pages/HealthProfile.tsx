@@ -18,7 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 const healthConditions = [
   "Diabetes Type 1",
   "Diabetes Type 2",
-  "Hypertension",
+  "High Blood Pressure",
+  "Low Blood Pressure",
   "Heart Disease",
   "High Cholesterol",
   "Kidney Disease",
