@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Leaf, LogOut } from "lucide-react";
+import { Menu, X, Leaf, LogOut, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
@@ -75,14 +75,22 @@ const Navbar = () => {
             {loading ? (
               <div className="w-20 h-9 bg-muted animate-pulse rounded-md" />
             ) : user ? (
-              <Button 
-                variant="outline" 
-                className="font-medium"
-                onClick={handleSignOut}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
+              <>
+                <Link to="/account">
+                  <Button variant="ghost" className="font-medium">
+                    <User className="w-4 h-4 mr-2" />
+                    Account
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline" 
+                  className="font-medium"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
             ) : (
               <>
                 <Link to="/auth">
@@ -141,6 +149,12 @@ const Navbar = () => {
                     <Link to="/dashboard" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start font-medium">
                         Dashboard
+                      </Button>
+                    </Link>
+                    <Link to="/account" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start font-medium">
+                        <User className="w-4 h-4 mr-2" />
+                        Account
                       </Button>
                     </Link>
                     <Button 

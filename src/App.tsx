@@ -12,6 +12,7 @@ import MealPlan from "./pages/MealPlan";
 import Tracking from "./pages/Tracking";
 import Coach from "./pages/Coach";
 import Onboarding from "./pages/Onboarding";
+import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/meal-plan" element={<MealPlan />} />
             <Route path="/tracking" element={<Tracking />} />
             <Route path="/coach" element={<Coach />} />
+            <Route path="/account" element={<Account />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
