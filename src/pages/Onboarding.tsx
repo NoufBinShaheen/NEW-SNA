@@ -68,7 +68,7 @@ export default function Onboarding() {
                 <Leaf className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="font-display font-bold text-xl text-foreground">
-                Smart<span className="text-primary">NutriAssistant</span>
+                Smart<span className="text-primary">NutritionAssistant</span>
               </span>
             </div>
             <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
