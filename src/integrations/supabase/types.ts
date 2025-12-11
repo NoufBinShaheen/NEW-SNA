@@ -110,10 +110,12 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          coach_reminder_frequency: string | null
           created_at: string
           email_notifications: boolean
           first_name: string | null
           id: string
+          last_coach_session: string | null
           last_name: string | null
           meal_reminders: boolean
           updated_at: string
@@ -122,10 +124,12 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          coach_reminder_frequency?: string | null
           created_at?: string
           email_notifications?: boolean
           first_name?: string | null
           id?: string
+          last_coach_session?: string | null
           last_name?: string | null
           meal_reminders?: boolean
           updated_at?: string
@@ -134,10 +138,12 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          coach_reminder_frequency?: string | null
           created_at?: string
           email_notifications?: boolean
           first_name?: string | null
           id?: string
+          last_coach_session?: string | null
           last_name?: string | null
           meal_reminders?: boolean
           updated_at?: string

@@ -30,6 +30,7 @@ interface Profile {
   email_notifications: boolean;
   meal_reminders: boolean;
   weekly_reports: boolean;
+  coach_reminder_frequency: string | null;
 }
 
 const Account = () => {
@@ -44,6 +45,7 @@ const Account = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [mealReminders, setMealReminders] = useState(true);
   const [weeklyReports, setWeeklyReports] = useState(true);
+  const [coachReminderFrequency, setCoachReminderFrequency] = useState("weekly");
   
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -75,7 +77,7 @@ const Account = () => {
     
     const { data, error } = await supabase
       .from("profiles")
-      .select("first_name, last_name, avatar_url, email_notifications, meal_reminders, weekly_reports")
+      .select("first_name, last_name, avatar_url, email_notifications, meal_reminders, weekly_reports, coach_reminder_frequency")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -92,6 +94,7 @@ const Account = () => {
       setEmailNotifications(data.email_notifications);
       setMealReminders(data.meal_reminders);
       setWeeklyReports(data.weekly_reports);
+      setCoachReminderFrequency(data.coach_reminder_frequency || "weekly");
     }
   };
 
@@ -217,7 +220,8 @@ const Account = () => {
         .update({
           email_notifications: emailNotifications,
           meal_reminders: mealReminders,
-          weekly_reports: weeklyReports
+          weekly_reports: weeklyReports,
+          coach_reminder_frequency: coachReminderFrequency
         })
         .eq("user_id", user.id);
 
@@ -527,6 +531,35 @@ const Account = () => {
                     checked={weeklyReports}
                     onCheckedChange={setWeeklyReports}
                   />
+                </div>
+                
+                {/* Coach Reminder Frequency */}
+                <div className="space-y-2">
+                  <Label>AI Coach Reminder Frequency</Label>
+                  <p className="text-sm text-muted-foreground mb-2">How often should we remind you to check in with your AI coach?</p>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant={coachReminderFrequency === "daily" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCoachReminderFrequency("daily")}
+                    >
+                      Daily
+                    </Button>
+                    <Button 
+                      variant={coachReminderFrequency === "weekly" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCoachReminderFrequency("weekly")}
+                    >
+                      Weekly
+                    </Button>
+                    <Button 
+                      variant={coachReminderFrequency === "none" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCoachReminderFrequency("none")}
+                    >
+                      None
+                    </Button>
+                  </div>
                 </div>
                 <Button onClick={handleSaveNotifications} disabled={savingNotifications}>
                   {savingNotifications && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
