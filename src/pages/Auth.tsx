@@ -7,15 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Leaf, Eye, EyeOff, ArrowLeft, Phone, Mail } from "lucide-react";
+import { Leaf, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 const nameSchema = z.string().min(1, "This field is required").max(50, "Maximum 50 characters");
-const phoneSchema = z.string().regex(/^\+?[1-9]\d{6,14}$/, "Please enter a valid phone number (e.g., +966512345678)");
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -23,16 +21,10 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [signInMethod, setSignInMethod] = useState<"email" | "phone">("email");
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-
-  // Phone login state
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otpCode, setOtpCode] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
 
   // Signup form state
   const [signupEmail, setSignupEmail] = useState("");
@@ -141,69 +133,6 @@ const Auth = () => {
     }
   };
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearErrors();
-
-    const phoneResult = phoneSchema.safeParse(phoneNumber);
-    if (!phoneResult.success) {
-      setErrors({ phone: phoneResult.error.errors[0].message });
-      return;
-    }
-
-    setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: phoneNumber,
-    });
-    setIsLoading(false);
-
-    if (error) {
-      toast({
-        title: "Failed to send OTP",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      setOtpSent(true);
-      toast({
-        title: "OTP Sent!",
-        description: "Check your phone for the verification code.",
-      });
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearErrors();
-
-    if (!otpCode || otpCode.length < 6) {
-      setErrors({ otp: "Please enter a valid 6-digit code" });
-      return;
-    }
-
-    setIsLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
-      phone: phoneNumber,
-      token: otpCode,
-      type: "sms",
-    });
-    setIsLoading(false);
-
-    if (error) {
-      toast({
-        title: "Verification Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Welcome!",
-        description: "You have successfully signed in.",
-      });
-      navigate("/onboarding");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
       <Link 
@@ -238,133 +167,48 @@ const Auth = () => {
 
               {/* Login Tab */}
               <TabsContent value="login">
-                {/* Method Toggle */}
-                <div className="flex gap-2 mb-4">
-                  <Button
-                    type="button"
-                    variant={signInMethod === "email" ? "default" : "outline"}
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => { setSignInMethod("email"); setOtpSent(false); }}
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={signInMethod === "phone" ? "default" : "outline"}
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => { setSignInMethod("phone"); setOtpSent(false); }}
-                  >
-                    <Phone className="w-4 h-4 mr-2" />
-                    Phone
-                  </Button>
-                </div>
-
-                {signInMethod === "email" ? (
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="you@example.com"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        className={errors.loginEmail ? "border-destructive" : ""}
-                      />
-                      {errors.loginEmail && (
-                        <p className="text-sm text-destructive">{errors.loginEmail}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password">Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="login-password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          value={loginPassword}
-                          onChange={(e) => setLoginPassword(e.target.value)}
-                          className={errors.loginPassword ? "border-destructive pr-10" : "pr-10"}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                      {errors.loginPassword && (
-                        <p className="text-sm text-destructive">{errors.loginPassword}</p>
-                      )}
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Signing in..." : "Sign In"}
-                    </Button>
-                  </form>
-                ) : (
-                  <>
-                    {!otpSent ? (
-                      <form onSubmit={handleSendOtp} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="phone">Phone Number</Label>
-                          <Input
-                            id="phone"
-                            type="tel"
-                            placeholder="+966 512345678"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            className={errors.phone ? "border-destructive" : ""}
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            Include country code (e.g., +966 for Saudi Arabia)
-                          </p>
-                          {errors.phone && (
-                            <p className="text-sm text-destructive">{errors.phone}</p>
-                          )}
-                        </div>
-                        <Button type="submit" className="w-full" disabled={isLoading}>
-                          {isLoading ? "Sending..." : "Send Verification Code"}
-                        </Button>
-                      </form>
-                    ) : (
-                      <form onSubmit={handleVerifyOtp} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="otp">Verification Code</Label>
-                          <Input
-                            id="otp"
-                            type="text"
-                            placeholder="123456"
-                            maxLength={6}
-                            value={otpCode}
-                            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                            className={errors.otp ? "border-destructive" : ""}
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            Enter the 6-digit code sent to {phoneNumber}
-                          </p>
-                          {errors.otp && (
-                            <p className="text-sm text-destructive">{errors.otp}</p>
-                          )}
-                        </div>
-                        <Button type="submit" className="w-full" disabled={isLoading}>
-                          {isLoading ? "Verifying..." : "Verify & Sign In"}
-                        </Button>
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          className="w-full"
-                          onClick={() => setOtpSent(false)}
-                        >
-                          Change Phone Number
-                        </Button>
-                      </form>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email">Email</Label>
+                    <Input
+                      id="login-email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      className={errors.loginEmail ? "border-destructive" : ""}
+                    />
+                    {errors.loginEmail && (
+                      <p className="text-sm text-destructive">{errors.loginEmail}</p>
                     )}
-                  </>
-                )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password">Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="login-password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        className={errors.loginPassword ? "border-destructive pr-10" : "pr-10"}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    {errors.loginPassword && (
+                      <p className="text-sm text-destructive">{errors.loginPassword}</p>
+                    )}
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Signing in..." : "Sign In"}
+                  </Button>
+                </form>
               </TabsContent>
 
               {/* Signup Tab */}
