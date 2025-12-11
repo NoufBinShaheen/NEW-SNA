@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import MealPlan from "./pages/MealPlan";
 import Tracking from "./pages/Tracking";
 import Coach from "./pages/Coach";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/health-profile" element={<HealthProfile />} />
             <Route path="/meal-plan" element={<MealPlan />} />
