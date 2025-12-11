@@ -18,9 +18,9 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `You are a professional nutritionist AI assistant. Based on the user's health profile, generate personalized nutrition recommendations.
+    let systemPrompt = `You are a professional nutritionist AI assistant and personal health coach. Based on the user's health profile, provide personalized nutrition recommendations and coaching.
 
-When generating meal plans, consider:
+When providing advice, consider:
 - Their health conditions and medical needs
 - Dietary preferences and restrictions
 - Allergies (CRITICAL: Never include allergens)
@@ -59,7 +59,40 @@ Format the response in a clear, organized way with emojis for visual appeal.`;
 
 Make tips specific, actionable, and backed by nutrition science.`;
     } else if (type === "coach") {
-      userPrompt = healthProfile.message || "Give me general nutrition advice for today.";
+      // Include full health profile context for personalized coaching
+      const profileContext = `
+USER HEALTH PROFILE (use this to personalize your responses):
+- Age: ${healthProfile.age || "Not specified"}
+- Gender: ${healthProfile.gender || "Not specified"}
+- Height: ${healthProfile.height ? `${healthProfile.height} cm` : "Not specified"}
+- Current Weight: ${healthProfile.weight ? `${healthProfile.weight} kg` : "Not specified"}
+- Target Weight: ${healthProfile.target_weight ? `${healthProfile.target_weight} kg` : "Not specified"}
+- Activity Level: ${healthProfile.activity_level || "Not specified"}
+- Health Conditions: ${healthProfile.health_conditions?.join(", ") || "None reported"}
+- Current Medications: ${healthProfile.medications || "None reported"}
+- Dietary Preferences: ${healthProfile.dietary_preferences?.join(", ") || "None specified"}
+- Food Allergies: ${healthProfile.allergies?.join(", ") || "None reported"}
+- Disliked Foods: ${healthProfile.disliked_foods || "None specified"}
+- Health Goals: ${healthProfile.goals?.join(", ") || "General wellness"}
+- Timeline: ${healthProfile.timeline || "Not specified"}
+- Additional Notes: ${healthProfile.additional_notes || "None"}
+
+You already have access to all the user's health information above. DO NOT ask them to provide this information again. Use it to give personalized, specific advice.`;
+
+      systemPrompt = `You are a friendly, knowledgeable AI nutrition coach. You have access to the user's complete health profile and should use it to provide personalized advice.
+
+${profileContext}
+
+IMPORTANT GUIDELINES:
+1. NEVER ask for information you already have from their profile above
+2. Refer to their specific details when giving advice (e.g., "Since you have diabetes..." or "Given your goal of weight loss...")
+3. Always consider their allergies and dietary preferences
+4. Be encouraging and supportive
+5. Provide specific, actionable recommendations
+6. If they ask about foods, consider their health conditions and allergies
+7. Keep responses conversational but informative`;
+
+      userPrompt = healthProfile.message || "Give me personalized nutrition advice for today.";
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
