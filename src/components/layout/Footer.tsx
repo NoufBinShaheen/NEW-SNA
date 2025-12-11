@@ -50,7 +50,8 @@ const Footer = () => {
                     ) : (
                       <a
                         href="#"
-                        className="text-background/60 hover:text-background transition-colors"
+                        onClick={(e) => e.preventDefault()}
+                        className="text-background/60 hover:text-background transition-colors cursor-pointer"
                       >
                         {link}
                       </a>
@@ -68,13 +69,13 @@ const Footer = () => {
             © 2025 Smart Nutrition Assistant. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <a href="#" className="text-background/60 hover:text-background text-sm transition-colors">
+            <a href="#" onClick={(e) => e.preventDefault()} className="text-background/60 hover:text-background text-sm transition-colors cursor-pointer">
               Privacy Policy
             </a>
-            <a href="#" className="text-background/60 hover:text-background text-sm transition-colors">
+            <a href="#" onClick={(e) => e.preventDefault()} className="text-background/60 hover:text-background text-sm transition-colors cursor-pointer">
               Terms of Service
             </a>
-            <a href="#" className="text-background/60 hover:text-background text-sm transition-colors">
+            <a href="#" onClick={(e) => e.preventDefault()} className="text-background/60 hover:text-background text-sm transition-colors cursor-pointer">
               Cookie Settings
             </a>
           </div>
