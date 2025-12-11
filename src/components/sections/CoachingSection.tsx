@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const coachingFeatures = [
   "Unlimited AI chat support 24/7",
-  "Weekly video check-ins with nutritionists",
+  
   "Personalized goal setting sessions",
   "Real-time meal feedback and adjustments",
   "Crisis support for health concerns",
