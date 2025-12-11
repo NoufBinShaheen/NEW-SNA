@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Utensils, Target, Activity, MessageCircle, ClipboardList, User, LayoutDashboard, LogOut } from "lucide-react";
+import { Utensils, Target, Activity, MessageCircle, ClipboardList, User, LayoutDashboard, LogOut, Leaf } from "lucide-react";
 import { toast } from "sonner";
 
 const options = [
@@ -59,20 +59,33 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <div className="max-w-4xl w-full">
-        {/* Top Navigation Buttons */}
-        <div className="flex justify-end gap-2 mb-6">
-          <Button variant="outline" onClick={() => navigate("/dashboard")}>
-            <LayoutDashboard className="w-4 h-4 mr-2" />
-            Dashboard
-          </Button>
-          <Button variant="outline" onClick={() => navigate("/account")}>
-            <User className="w-4 h-4 mr-2" />
-            Account
-          </Button>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+        {/* Top Navigation */}
+        <div className="flex items-center justify-between mb-6">
+          {/* Logo */}
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-soft">
+              <Leaf className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="font-display font-bold text-xl text-foreground">
+              Smart<span className="text-primary">Nutrition</span>
+            </span>
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/dashboard")}>
+              <LayoutDashboard className="w-4 h-4 mr-2" />
+              Dashboard
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/account")}>
+              <User className="w-4 h-4 mr-2" />
+              Account
+            </Button>
+            <Button variant="outline" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         <div className="text-center mb-8">
