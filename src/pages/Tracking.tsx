@@ -4,15 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   Loader2, Plus, Flame, Droplets, Apple, Utensils, 
-  TrendingUp, Calendar, Check, X 
+  CalendarIcon, Check, X, CheckCircle2 
 } from "lucide-react";
+import { format, isSameDay, startOfMonth, endOfMonth } from "date-fns";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface FoodEntry {
   id: string;
@@ -24,6 +28,12 @@ interface FoodEntry {
   time: string;
 }
 
+interface DayTrackingData {
+  date: string;
+  food_entries: FoodEntry[];
+  water_intake: number;
+}
+
 const Tracking = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -33,7 +43,12 @@ const Tracking = () => {
   const [newFood, setNewFood] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "" });
   const [waterIntake, setWaterIntake] = useState(0);
   const [waterToAdd, setWaterToAdd] = useState("");
-  const today = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [monthTrackingData, setMonthTrackingData] = useState<DayTrackingData[]>([]);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  
+  const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+  const isToday = isSameDay(selectedDate, new Date());
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -41,12 +56,34 @@ const Tracking = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Load month tracking data for calendar indicators
+  useEffect(() => {
+    const loadMonthData = async () => {
+      if (!user) return;
+      
+      const monthStart = format(startOfMonth(selectedDate), 'yyyy-MM-dd');
+      const monthEnd = format(endOfMonth(selectedDate), 'yyyy-MM-dd');
+      
+      const { data } = await supabase
+        .from("daily_tracking")
+        .select("date, food_entries, water_intake")
+        .eq("user_id", user.id)
+        .gte("date", monthStart)
+        .lte("date", monthEnd);
+      
+      if (data) {
+        setMonthTrackingData(data as unknown as DayTrackingData[]);
+      }
+    };
+    
+    loadMonthData();
+  }, [user, selectedDate]);
+
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
       
       try {
-        // Load health profile and daily tracking in parallel
         const [profileResult, trackingResult] = await Promise.all([
           supabase
             .from("health_profiles")
@@ -57,7 +94,7 @@ const Tracking = () => {
             .from("daily_tracking")
             .select("*")
             .eq("user_id", user.id)
-            .eq("date", today)
+            .eq("date", formattedDate)
             .maybeSingle()
         ]);
         
@@ -66,6 +103,9 @@ const Tracking = () => {
         if (trackingResult.data) {
           setFoodEntries(trackingResult.data.food_entries as unknown as FoodEntry[]);
           setWaterIntake(trackingResult.data.water_intake);
+        } else {
+          setFoodEntries([]);
+          setWaterIntake(0);
         }
       } catch (error) {
         console.error("Error loading data:", error);
@@ -75,12 +115,12 @@ const Tracking = () => {
     };
 
     loadData();
-  }, [user, today]);
+  }, [user, formattedDate]);
 
-  // Save tracking data whenever it changes
+  // Save tracking data whenever it changes (only for today)
   useEffect(() => {
     const saveTracking = async () => {
-      if (!user || isLoading) return;
+      if (!user || isLoading || !isToday) return;
       
       try {
         await supabase
@@ -88,7 +128,7 @@ const Tracking = () => {
           .upsert(
             {
               user_id: user.id,
-              date: today,
+              date: formattedDate,
               food_entries: JSON.parse(JSON.stringify(foodEntries)),
               water_intake: waterIntake
             }, 
@@ -100,7 +140,20 @@ const Tracking = () => {
     };
 
     saveTracking();
-  }, [user, foodEntries, waterIntake, today, isLoading]);
+  }, [user, foodEntries, waterIntake, formattedDate, isLoading, isToday]);
+
+  // Helper to check if a day has logs and completion status
+  const getDayStatus = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const dayData = monthTrackingData.find(d => d.date === dateStr);
+    if (!dayData) return null;
+    
+    const hasLogs = dayData.food_entries.length > 0 || dayData.water_intake > 0;
+    const totalCalories = dayData.food_entries.reduce((sum, e) => sum + e.calories, 0);
+    const isComplete = totalCalories >= dailyTarget * 0.8; // 80% of target = complete
+    
+    return { hasLogs, isComplete };
+  };
 
   const calculateDailyCalories = () => {
     if (!healthProfile?.height || !healthProfile?.weight || !healthProfile?.age || !healthProfile?.gender) return 2000;
@@ -184,11 +237,67 @@ const Tracking = () => {
               <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                 Daily Tracking
               </h1>
-              <p className="text-muted-foreground mt-1 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-              </p>
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="mt-2 gap-2">
+                    <CalendarIcon className="w-4 h-4" />
+                    {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                    {!isToday && <span className="text-xs text-muted-foreground">(viewing history)</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        setSelectedDate(date);
+                        setIsLoading(true);
+                        setCalendarOpen(false);
+                      }
+                    }}
+                    disabled={(date) => date > new Date()}
+                    className="pointer-events-auto"
+                    modifiers={{
+                      logged: monthTrackingData
+                        .filter(d => d.food_entries.length > 0 || d.water_intake > 0)
+                        .map(d => new Date(d.date + 'T00:00:00')),
+                      complete: monthTrackingData
+                        .filter(d => {
+                          const totalCal = d.food_entries.reduce((sum, e) => sum + e.calories, 0);
+                          return totalCal >= dailyTarget * 0.8;
+                        })
+                        .map(d => new Date(d.date + 'T00:00:00')),
+                    }}
+                    modifiersStyles={{
+                      logged: { 
+                        backgroundColor: 'hsl(var(--primary) / 0.2)',
+                        borderRadius: '50%'
+                      },
+                      complete: { 
+                        backgroundColor: 'hsl(142.1 76.2% 36.3% / 0.3)',
+                        borderRadius: '50%'
+                      },
+                    }}
+                  />
+                  <div className="p-3 border-t border-border text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-3 h-3 rounded-full bg-primary/20" />
+                      <span>Has logged entries</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-green-500/30" />
+                      <span>Completed (≥80% calories)</span>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
+            {!isToday && (
+              <Button onClick={() => setSelectedDate(new Date())} variant="secondary">
+                Back to Today
+              </Button>
+            )}
           </div>
 
           {/* Progress Overview */}
@@ -255,98 +364,104 @@ const Tracking = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-3 flex-wrap">
-                <Input
-                  placeholder="Amount (ml)"
-                  type="number"
-                  value={waterToAdd}
-                  onChange={(e) => setWaterToAdd(e.target.value)}
-                  className="w-32"
-                />
-                <Button 
-                  onClick={() => {
-                    if (waterToAdd) {
-                      setWaterIntake(waterIntake + parseInt(waterToAdd));
-                      setWaterToAdd("");
-                    }
-                  }}
-                  variant="secondary"
-                  className="gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add
-                </Button>
-                <div className="flex gap-2 ml-auto">
-                  {[250, 500].map((ml) => (
-                    <Button
-                      key={ml}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setWaterIntake(waterIntake + ml)}
-                    >
-                      +{ml}ml
-                    </Button>
-                  ))}
+              {isToday ? (
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Input
+                    placeholder="Amount (ml)"
+                    type="number"
+                    value={waterToAdd}
+                    onChange={(e) => setWaterToAdd(e.target.value)}
+                    className="w-32"
+                  />
+                  <Button 
+                    onClick={() => {
+                      if (waterToAdd) {
+                        setWaterIntake(waterIntake + parseInt(waterToAdd));
+                        setWaterToAdd("");
+                      }
+                    }}
+                    variant="secondary"
+                    className="gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add
+                  </Button>
+                  <div className="flex gap-2 ml-auto">
+                    {[250, 500].map((ml) => (
+                      <Button
+                        key={ml}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setWaterIntake(waterIntake + ml)}
+                      >
+                        +{ml}ml
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <p className="text-muted-foreground">Water intake: {waterIntake} ml</p>
+              )}
             </CardContent>
           </Card>
 
-          {/* Add Food */}
-          <Card className="border-border/50 shadow-lg mb-6">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Plus className="w-5 h-5 text-primary" />
-                Log Food
-              </CardTitle>
-              <CardDescription>Track what you eat throughout the day</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
-                <Input
-                  placeholder="Food name"
-                  value={newFood.name}
-                  onChange={(e) => setNewFood({ ...newFood, name: e.target.value })}
-                  className="col-span-2"
-                />
-                <Input
-                  placeholder="Calories"
-                  type="number"
-                  value={newFood.calories}
-                  onChange={(e) => setNewFood({ ...newFood, calories: e.target.value })}
-                />
-                <Input
-                  placeholder="Protein (g)"
-                  type="number"
-                  value={newFood.protein}
-                  onChange={(e) => setNewFood({ ...newFood, protein: e.target.value })}
-                />
-                <Input
-                  placeholder="Carbs (g)"
-                  type="number"
-                  value={newFood.carbs}
-                  onChange={(e) => setNewFood({ ...newFood, carbs: e.target.value })}
-                />
-                <Input
-                  placeholder="Fat (g)"
-                  type="number"
-                  value={newFood.fat}
-                  onChange={(e) => setNewFood({ ...newFood, fat: e.target.value })}
-                />
-                <Button onClick={addFoodEntry} className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Add
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Add Food - Only show for today */}
+          {isToday && (
+            <Card className="border-border/50 shadow-lg mb-6">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-primary" />
+                  Log Food
+                </CardTitle>
+                <CardDescription>Track what you eat throughout the day</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
+                  <Input
+                    placeholder="Food name"
+                    value={newFood.name}
+                    onChange={(e) => setNewFood({ ...newFood, name: e.target.value })}
+                    className="col-span-2"
+                  />
+                  <Input
+                    placeholder="Calories"
+                    type="number"
+                    value={newFood.calories}
+                    onChange={(e) => setNewFood({ ...newFood, calories: e.target.value })}
+                  />
+                  <Input
+                    placeholder="Protein (g)"
+                    type="number"
+                    value={newFood.protein}
+                    onChange={(e) => setNewFood({ ...newFood, protein: e.target.value })}
+                  />
+                  <Input
+                    placeholder="Carbs (g)"
+                    type="number"
+                    value={newFood.carbs}
+                    onChange={(e) => setNewFood({ ...newFood, carbs: e.target.value })}
+                  />
+                  <Input
+                    placeholder="Fat (g)"
+                    type="number"
+                    value={newFood.fat}
+                    onChange={(e) => setNewFood({ ...newFood, fat: e.target.value })}
+                  />
+                  <Button onClick={addFoodEntry} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Food Log */}
           <Card className="border-border/50 shadow-lg">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="text-lg flex items-center gap-2">
                 <Utensils className="w-5 h-5 text-primary" />
-                Today's Food Log
+                {isToday ? "Today's Food Log" : `Food Log - ${format(selectedDate, 'MMM d, yyyy')}`}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -378,14 +493,16 @@ const Tracking = () => {
                             P: {entry.protein}g | C: {entry.carbs}g | F: {entry.fat}g
                           </p>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeEntry(entry.id)}
-                          className="text-muted-foreground hover:text-destructive"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
+                        {isToday && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeEntry(entry.id)}
+                            className="text-muted-foreground hover:text-destructive"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
