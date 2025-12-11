@@ -40,18 +40,20 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors font-medium"
-              >
-                {link.name}
-              </a>
-            ))}
-          </div>
+          {/* Desktop Navigation - Only show when logged out */}
+          {!user && (
+            <div className="hidden md:flex items-center gap-8">
+              {navLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+                >
+                  {link.name}
+                </a>
+              ))}
+            </div>
+          )}
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
@@ -107,7 +109,8 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
             <div className="flex flex-col gap-4">
-              {navLinks.map((link) => (
+              {/* Only show nav links when logged out */}
+              {!user && navLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
