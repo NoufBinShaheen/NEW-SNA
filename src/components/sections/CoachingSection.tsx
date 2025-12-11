@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Video, Phone, Calendar, CheckCircle } from "lucide-react";
+import { MessageCircle, Video, Mic, Calendar, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const coachingFeatures = [
@@ -57,10 +57,12 @@ const CoachingSection = () => {
                     <Video className="w-4 h-4" />
                     Video
                   </Button>
-                  <Button size="sm" variant="outline" className="flex-1 gap-2">
-                    <Phone className="w-4 h-4" />
-                    Call
-                  </Button>
+                  <Link to="/coach">
+                    <Button size="sm" variant="outline" className="flex-1 gap-2">
+                      <Mic className="w-4 h-4" />
+                      Voice Chat
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
