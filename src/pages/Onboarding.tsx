@@ -65,13 +65,13 @@ export default function Onboarding() {
             <LayoutDashboard className="w-4 h-4 mr-2" />
             Dashboard
           </Button>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
           <Button variant="outline" onClick={() => navigate("/account")}>
             <User className="w-4 h-4 mr-2" />
             Account
+          </Button>
+          <Button variant="outline" onClick={handleSignOut}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
           </Button>
         </div>
 
