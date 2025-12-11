@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { 
-  Loader2, Send, MessageCircle, Bot, User, AlertTriangle, Lightbulb, CheckCircle2, Mic, MicOff
+  Loader2, Send, MessageCircle, Bot, User, AlertTriangle, Lightbulb, CheckCircle2, Mic, MicOff, Volume2
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -32,8 +32,11 @@ const Coach = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [wasVoiceInput, setWasVoiceInput] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -64,6 +67,64 @@ const Coach = () => {
   }, [user]);
 
 
+  const playVoiceResponse = async (text: string) => {
+    try {
+      setIsPlayingAudio(true);
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ text, voice: "alloy" }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to generate speech");
+      }
+
+      const { audioContent } = await response.json();
+      
+      // Convert base64 to audio and play
+      const audioBlob = new Blob(
+        [Uint8Array.from(atob(audioContent), c => c.charCodeAt(0))],
+        { type: 'audio/mp3' }
+      );
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      
+      audio.onended = () => {
+        setIsPlayingAudio(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.onerror = () => {
+        setIsPlayingAudio(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      await audio.play();
+    } catch (error) {
+      console.error("Error playing voice response:", error);
+      setIsPlayingAudio(false);
+      toast({
+        title: "Voice playback error",
+        description: "Could not play the voice response.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const toggleVoiceRecording = () => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       toast({
@@ -91,6 +152,7 @@ const Coach = () => {
 
       recognition.onstart = () => {
         setIsRecording(true);
+        setWasVoiceInput(true); // Mark that this will be a voice input
         toast({
           title: "Listening...",
           description: "Speak now. I'm listening to your question.",
@@ -107,6 +169,7 @@ const Coach = () => {
       recognition.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         setIsRecording(false);
+        setWasVoiceInput(false);
         toast({
           title: "Error",
           description: "Could not recognize speech. Please try again.",
@@ -127,9 +190,11 @@ const Coach = () => {
     if (!input.trim() || isTyping) return;
 
     const userMessage: Message = { role: "user", content: input };
+    const shouldPlayVoice = wasVoiceInput; // Capture before reset
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
+    setWasVoiceInput(false); // Reset for next message
 
     try {
       const response = await fetch(
@@ -199,6 +264,11 @@ const Coach = () => {
             break;
           }
         }
+      }
+
+      // Play voice response if user sent a voice message
+      if (shouldPlayVoice && assistantContent) {
+        playVoiceResponse(assistantContent);
       }
     } catch (error: any) {
       console.error("Error sending message:", error);
@@ -275,64 +345,76 @@ const Coach = () => {
                     {message.role === "user" ? (
                       <p className="whitespace-pre-wrap">{message.content}</p>
                     ) : (
-                      <div className="prose prose-sm max-w-none dark:prose-invert">
-                        <ReactMarkdown
-                          components={{
-                            h1: ({ children }) => (
-                              <h1 className="text-lg font-bold text-foreground mt-3 mb-2 first:mt-0">{children}</h1>
-                            ),
-                            h2: ({ children }) => (
-                              <h2 className="text-base font-semibold text-foreground mt-3 mb-2 flex items-center gap-2">
-                                <Lightbulb className="w-4 h-4 text-primary" />
-                                {children}
-                              </h2>
-                            ),
-                            h3: ({ children }) => (
-                              <h3 className="text-sm font-semibold text-foreground mt-2 mb-1">{children}</h3>
-                            ),
-                            p: ({ children }) => {
-                              const text = String(children);
-                              if (text.includes("IMPORTANT") || text.includes("⚠") || text.includes("🚨")) {
+                      <div>
+                        <div className="prose prose-sm max-w-none dark:prose-invert">
+                          <ReactMarkdown
+                            components={{
+                              h1: ({ children }) => (
+                                <h1 className="text-lg font-bold text-foreground mt-3 mb-2 first:mt-0">{children}</h1>
+                              ),
+                              h2: ({ children }) => (
+                                <h2 className="text-base font-semibold text-foreground mt-3 mb-2 flex items-center gap-2">
+                                  <Lightbulb className="w-4 h-4 text-primary" />
+                                  {children}
+                                </h2>
+                              ),
+                              h3: ({ children }) => (
+                                <h3 className="text-sm font-semibold text-foreground mt-2 mb-1">{children}</h3>
+                              ),
+                              p: ({ children }) => {
+                                const text = String(children);
+                                if (text.includes("IMPORTANT") || text.includes("⚠") || text.includes("🚨")) {
+                                  return (
+                                    <div className="my-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg flex gap-2">
+                                      <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                                      <span className="text-sm text-foreground/90">{children}</span>
+                                    </div>
+                                  );
+                                }
+                                return <p className="text-foreground/80 leading-relaxed my-2 first:mt-0 last:mb-0">{children}</p>;
+                              },
+                              ul: ({ children }) => (
+                                <ul className="space-y-1.5 my-2">{children}</ul>
+                              ),
+                              ol: ({ children }) => (
+                                <ol className="space-y-1.5 my-2 list-none">{children}</ol>
+                              ),
+                              li: ({ children, ...props }) => {
+                                const index = props.node?.position?.start?.line;
                                 return (
-                                  <div className="my-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg flex gap-2">
-                                    <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                                    <span className="text-sm text-foreground/90">{children}</span>
-                                  </div>
+                                  <li className="flex items-start gap-2 text-foreground/80">
+                                    <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 text-xs font-medium mt-0.5">
+                                      {typeof index === 'number' ? <CheckCircle2 className="w-3 h-3" /> : <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                                    </span>
+                                    <span className="leading-relaxed">{children}</span>
+                                  </li>
                                 );
-                              }
-                              return <p className="text-foreground/80 leading-relaxed my-2 first:mt-0 last:mb-0">{children}</p>;
-                            },
-                            ul: ({ children }) => (
-                              <ul className="space-y-1.5 my-2">{children}</ul>
-                            ),
-                            ol: ({ children }) => (
-                              <ol className="space-y-1.5 my-2 list-none">{children}</ol>
-                            ),
-                            li: ({ children, ...props }) => {
-                              const index = props.node?.position?.start?.line;
-                              return (
-                                <li className="flex items-start gap-2 text-foreground/80">
-                                  <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 text-xs font-medium mt-0.5">
-                                    {typeof index === 'number' ? <CheckCircle2 className="w-3 h-3" /> : <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
-                                  </span>
-                                  <span className="leading-relaxed">{children}</span>
-                                </li>
-                              );
-                            },
-                            strong: ({ children }) => (
-                              <strong className="font-semibold text-foreground">{children}</strong>
-                            ),
-                            em: ({ children }) => (
-                              <em className="text-muted-foreground">{children}</em>
-                            ),
-                            code: ({ children }) => (
-                              <code className="px-1.5 py-0.5 bg-primary/10 text-primary rounded text-xs font-mono">{children}</code>
-                            ),
-                            hr: () => <hr className="my-3 border-border/50" />,
-                          }}
-                        >
-                          {message.content}
-                        </ReactMarkdown>
+                              },
+                              strong: ({ children }) => (
+                                <strong className="font-semibold text-foreground">{children}</strong>
+                              ),
+                              em: ({ children }) => (
+                                <em className="text-muted-foreground">{children}</em>
+                              ),
+                              code: ({ children }) => (
+                                <code className="px-1.5 py-0.5 bg-primary/10 text-primary rounded text-xs font-mono">{children}</code>
+                              ),
+                              hr: () => <hr className="my-3 border-border/50" />,
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
+                        {message.content && (
+                          <button
+                            onClick={() => playVoiceResponse(message.content)}
+                            disabled={isPlayingAudio}
+                            className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+                          >
+                            <Volume2 className={`w-3 h-3 ${isPlayingAudio ? 'animate-pulse' : ''}`} />
+                            {isPlayingAudio ? 'Playing...' : 'Listen'}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
