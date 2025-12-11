@@ -66,63 +66,47 @@ const Coach = () => {
     loadProfile();
   }, [user]);
 
+  const playVoiceResponse = (text: string) => {
+    if (!('speechSynthesis' in window)) {
+      toast({
+        title: "Not Supported",
+        description: "Text-to-speech is not supported in your browser.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const playVoiceResponse = async (text: string) => {
-    try {
-      setIsPlayingAudio(true);
-      
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({ text, voice: "alloy" }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to generate speech");
-      }
-
-      const { audioContent } = await response.json();
-      
-      // Convert base64 to audio and play
-      const audioBlob = new Blob(
-        [Uint8Array.from(atob(audioContent), c => c.charCodeAt(0))],
-        { type: 'audio/mp3' }
-      );
-      const audioUrl = URL.createObjectURL(audioBlob);
-      
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      
-      audio.onended = () => {
-        setIsPlayingAudio(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      audio.onerror = () => {
-        setIsPlayingAudio(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-      
-      await audio.play();
-    } catch (error) {
-      console.error("Error playing voice response:", error);
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    setIsPlayingAudio(true);
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    
+    // Try to get a natural-sounding voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(
+      voice => voice.lang.startsWith('en') && voice.name.includes('Google')
+    ) || voices.find(voice => voice.lang.startsWith('en'));
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    utterance.onend = () => setIsPlayingAudio(false);
+    utterance.onerror = () => {
       setIsPlayingAudio(false);
       toast({
         title: "Voice playback error",
         description: "Could not play the voice response.",
         variant: "destructive",
       });
-    }
+    };
+    
+    window.speechSynthesis.speak(utterance);
   };
 
   const toggleVoiceRecording = () => {
