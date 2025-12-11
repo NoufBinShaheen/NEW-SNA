@@ -49,16 +49,8 @@ const CoachingSection = () => {
 
                 {/* Communication Options */}
                 <div className="flex items-center gap-3">
-                  <Button size="sm" variant="outline" className="flex-1 gap-2">
-                    <MessageCircle className="w-4 h-4" />
-                    Chat
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1 gap-2">
-                    <Video className="w-4 h-4" />
-                    Video
-                  </Button>
-                  <Link to="/coach">
-                    <Button size="sm" variant="outline" className="flex-1 gap-2">
+                  <Link to="/coach" className="flex-1">
+                    <Button size="sm" variant="outline" className="w-full gap-2">
                       <Mic className="w-4 h-4" />
                       Voice Chat
                     </Button>
