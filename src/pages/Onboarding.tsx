@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Utensils, Target, Activity, MessageCircle, ClipboardList } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Utensils, Target, Activity, MessageCircle, ClipboardList, User, LayoutDashboard } from "lucide-react";
 
 const options = [
   {
@@ -51,6 +52,18 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <div className="max-w-4xl w-full">
+        {/* Top Navigation Buttons */}
+        <div className="flex justify-end gap-2 mb-6">
+          <Button variant="outline" onClick={() => navigate("/dashboard")}>
+            <LayoutDashboard className="w-4 h-4 mr-2" />
+            Dashboard
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/account")}>
+            <User className="w-4 h-4 mr-2" />
+            Account
+          </Button>
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
             Welcome, {firstName}! 👋
