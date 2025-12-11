@@ -14,14 +14,14 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <a href="/" className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-4">
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
                 <Leaf className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="font-display font-bold text-xl text-background">
                 Smart<span className="text-primary">NutritionAssistant</span>
               </span>
-            </a>
+            </div>
             <p className="text-background/60 max-w-sm mb-6">
               AI-powered nutrition guidance for healthy living and chronic disease management. 
               Transform your health with personalized plans and expert coaching.
