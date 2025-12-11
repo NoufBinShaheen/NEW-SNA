@@ -314,13 +314,13 @@ const Auth = () => {
                           <Input
                             id="phone"
                             type="tel"
-                            placeholder="+1234567890"
+                            placeholder="+966512345678"
                             value={phoneNumber}
                             onChange={(e) => setPhoneNumber(e.target.value)}
                             className={errors.phone ? "border-destructive" : ""}
                           />
                           <p className="text-xs text-muted-foreground">
-                            Include country code (e.g., +1 for US)
+                            Include country code (e.g., +966 for Saudi Arabia)
                           </p>
                           {errors.phone && (
                             <p className="text-sm text-destructive">{errors.phone}</p>
