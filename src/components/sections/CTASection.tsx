@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CTASection = () => {
   return (
@@ -28,20 +29,24 @@ const CTASection = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button 
-                size="lg" 
-                className="bg-white text-primary hover:bg-white/90 font-semibold shadow-lg group px-8"
-              >
-                Get Started Free
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-2 border-white/30 text-primary-foreground hover:bg-white/10 font-semibold"
-              >
-                Schedule a Demo
-              </Button>
+              <Link to="/auth">
+                <Button 
+                  size="lg" 
+                  className="bg-white text-primary hover:bg-white/90 font-semibold shadow-lg group px-8"
+                >
+                  Get Started Free
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link to="/coach">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-2 border-white/30 text-primary-foreground hover:bg-white/10 font-semibold"
+                >
+                  Talk to AI Coach
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

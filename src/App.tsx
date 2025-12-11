@@ -8,6 +8,9 @@ import Index from "./pages/Index";
 import HealthProfile from "./pages/HealthProfile";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
+import MealPlan from "./pages/MealPlan";
+import Tracking from "./pages/Tracking";
+import Coach from "./pages/Coach";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +27,9 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/health-profile" element={<HealthProfile />} />
+            <Route path="/meal-plan" element={<MealPlan />} />
+            <Route path="/tracking" element={<Tracking />} />
+            <Route path="/coach" element={<Coach />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -418,6 +418,36 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Quick Actions */}
+              <Card className="border-border/50 shadow-lg mt-6">
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                  <CardDescription>Jump to key features</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Link to="/meal-plan">
+                      <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
+                        <Utensils className="w-6 h-6 text-primary" />
+                        <span>Generate Meal Plan</span>
+                      </Button>
+                    </Link>
+                    <Link to="/tracking">
+                      <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
+                        <Activity className="w-6 h-6 text-secondary" />
+                        <span>Track Today's Food</span>
+                      </Button>
+                    </Link>
+                    <Link to="/coach">
+                      <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
+                        <Sparkles className="w-6 h-6 text-accent-foreground" />
+                        <span>Chat with AI Coach</span>
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
             </>
           )}
         </div>
