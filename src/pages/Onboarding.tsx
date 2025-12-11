@@ -91,8 +91,8 @@ export default function Onboarding() {
         </div>
 
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-3">
-            <span className="text-gradient">Welcome, {firstName}!</span> 👋
+          <h1 className="text-4xl md:text-5xl font-display font-bold mb-3 text-foreground">
+            Welcome, {firstName}! 👋
           </h1>
           <p className="text-muted-foreground text-lg md:text-xl max-w-md mx-auto">
             What would you like to do today?
