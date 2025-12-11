@@ -31,7 +31,8 @@ const Tracking = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [foodEntries, setFoodEntries] = useState<FoodEntry[]>([]);
   const [newFood, setNewFood] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "" });
-  const [waterGlasses, setWaterGlasses] = useState(0);
+  const [waterIntake, setWaterIntake] = useState(0);
+  const [waterToAdd, setWaterToAdd] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -198,9 +199,9 @@ const Tracking = () => {
                   <span className="text-sm text-muted-foreground">Water</span>
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-2">
-                  {waterGlasses} / 8 glasses
+                  {waterIntake} / 2000 ml
                 </div>
-                <Progress value={(waterGlasses / 8) * 100} className="h-2" />
+                <Progress value={(waterIntake / 2000) * 100} className="h-2" />
               </CardContent>
             </Card>
           </div>
@@ -214,20 +215,39 @@ const Tracking = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-2 flex-wrap">
-                {[...Array(8)].map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setWaterGlasses(i + 1)}
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-                      i < waterGlasses 
-                        ? "bg-secondary text-secondary-foreground" 
-                        : "bg-muted text-muted-foreground hover:bg-muted/80"
-                    }`}
-                  >
-                    <Droplets className="w-5 h-5" />
-                  </button>
-                ))}
+              <div className="flex items-center gap-3 flex-wrap">
+                <Input
+                  placeholder="Amount (ml)"
+                  type="number"
+                  value={waterToAdd}
+                  onChange={(e) => setWaterToAdd(e.target.value)}
+                  className="w-32"
+                />
+                <Button 
+                  onClick={() => {
+                    if (waterToAdd) {
+                      setWaterIntake(waterIntake + parseInt(waterToAdd));
+                      setWaterToAdd("");
+                    }
+                  }}
+                  variant="secondary"
+                  className="gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add
+                </Button>
+                <div className="flex gap-2 ml-auto">
+                  {[250, 500].map((ml) => (
+                    <Button
+                      key={ml}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setWaterIntake(waterIntake + ml)}
+                    >
+                      +{ml}ml
+                    </Button>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
