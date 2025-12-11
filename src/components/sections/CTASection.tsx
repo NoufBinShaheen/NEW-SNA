@@ -41,8 +41,7 @@ const CTASection = () => {
               <Link to="/coach">
                 <Button 
                   size="lg" 
-                  variant="outline" 
-                  className="border-2 border-white/30 text-white hover:bg-white/10 font-semibold"
+                  className="bg-white text-primary hover:bg-white/90 font-semibold shadow-lg px-8"
                 >
                   Talk to AI Coach
                 </Button>
