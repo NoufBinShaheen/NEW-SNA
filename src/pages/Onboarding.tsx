@@ -2,7 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Utensils, Target, Activity, MessageCircle, ClipboardList, User, LayoutDashboard } from "lucide-react";
+import { Utensils, Target, Activity, MessageCircle, ClipboardList, User, LayoutDashboard, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 const options = [
   {
@@ -44,10 +45,16 @@ const options = [
 ];
 
 export default function Onboarding() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const firstName = user?.user_metadata?.first_name || "there";
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
@@ -57,6 +64,10 @@ export default function Onboarding() {
           <Button variant="outline" onClick={() => navigate("/dashboard")}>
             <LayoutDashboard className="w-4 h-4 mr-2" />
             Dashboard
+          </Button>
+          <Button variant="outline" onClick={handleSignOut}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
           </Button>
           <Button variant="outline" onClick={() => navigate("/account")}>
             <User className="w-4 h-4 mr-2" />
