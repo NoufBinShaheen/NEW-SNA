@@ -19,7 +19,7 @@ const Footer = () => {
                 <Leaf className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="font-display font-bold text-xl text-background">
-                Smart<span className="text-primary">Nutrition</span>
+                Smart<span className="text-primary">NutriAssistant</span>
               </span>
             </a>
             <p className="text-background/60 max-w-sm mb-6">
