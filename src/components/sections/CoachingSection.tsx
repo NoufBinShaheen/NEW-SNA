@@ -65,7 +65,7 @@ const CoachingSection = () => {
               </div>
 
               {/* Floating Schedule Card */}
-              <div className="absolute -bottom-6 -right-6 bg-card rounded-2xl p-4 shadow-card border border-border animate-float">
+              <div className="absolute -top-6 -right-6 bg-card rounded-2xl p-4 shadow-card border border-border animate-float">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
                     <Calendar className="w-5 h-5 text-accent-foreground" />
