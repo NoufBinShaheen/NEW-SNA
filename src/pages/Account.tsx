@@ -28,6 +28,7 @@ const Account = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [mealReminders, setMealReminders] = useState(true);
@@ -38,6 +39,7 @@ const Account = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   
   const [savingProfile, setSavingProfile] = useState(false);
+  const [savingEmail, setSavingEmail] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
   const [savingNotifications, setSavingNotifications] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -51,6 +53,7 @@ const Account = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      setEmail(user.email || "");
     }
   }, [user]);
 
@@ -112,6 +115,29 @@ const Account = () => {
       toast.error("Failed to upload avatar: " + error.message);
     } finally {
       setUploadingAvatar(false);
+    }
+  };
+
+  const handleChangeEmail = async () => {
+    if (!email || email === user?.email) {
+      toast.error("Please enter a different email address");
+      return;
+    }
+
+    setSavingEmail(true);
+    
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email: email
+      });
+
+      if (error) throw error;
+      
+      toast.success("Verification email sent! Please check your inbox to confirm the change.");
+    } catch (error: any) {
+      toast.error("Failed to update email: " + error.message);
+    } finally {
+      setSavingEmail(false);
     }
   };
 
@@ -285,13 +311,28 @@ const Account = () => {
                   </div>
                 </div>
 
-                {/* Email (read-only) */}
+                {/* Email */}
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <Input id="email" value={user.email || ""} disabled className="bg-muted" />
+                    <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <Input 
+                      id="email" 
+                      type="email"
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={handleChangeEmail} 
+                      disabled={savingEmail || email === user.email}
+                    >
+                      {savingEmail && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      Update
+                    </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground">A verification email will be sent to confirm the change</p>
                 </div>
 
                 {/* Member since */}
