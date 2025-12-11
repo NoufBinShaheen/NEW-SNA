@@ -59,9 +59,9 @@ const Navbar = () => {
               <div className="w-20 h-9 bg-muted animate-pulse rounded-md" />
             ) : user ? (
               <>
-                <Link to="/health-profile">
+                <Link to="/dashboard">
                   <Button variant="ghost" className="font-medium">
-                    My Profile
+                    Dashboard
                   </Button>
                 </Link>
                 <Button 
@@ -122,9 +122,9 @@ const Navbar = () => {
                   <div className="w-full h-9 bg-muted animate-pulse rounded-md" />
                 ) : user ? (
                   <>
-                    <Link to="/health-profile" onClick={() => setIsOpen(false)}>
+                    <Link to="/dashboard" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start font-medium">
-                        My Profile
+                        Dashboard
                       </Button>
                     </Link>
                     <Button 

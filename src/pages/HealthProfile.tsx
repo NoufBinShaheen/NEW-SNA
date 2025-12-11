@@ -263,9 +263,9 @@ const HealthProfile = () => {
 
       toast({
         title: "Profile Saved!",
-        description: "Your health profile has been saved. We'll create your personalized nutrition plan.",
+        description: "Your health profile has been saved. View your personalized dashboard.",
       });
-      navigate("/");
+      navigate("/dashboard");
     } catch (error: any) {
       console.error("Error saving profile:", error);
       toast({
