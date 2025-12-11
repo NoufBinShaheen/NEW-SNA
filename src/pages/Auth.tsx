@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 const nameSchema = z.string().min(1, "This field is required").max(50, "Maximum 50 characters");
-const phoneSchema = z.string().regex(/^\+?[1-9]\d{6,14}$/, "Please enter a valid phone number (e.g., +1234567890)");
+const phoneSchema = z.string().regex(/^\+?[1-9]\d{6,14}$/, "Please enter a valid phone number (e.g., +966512345678)");
 
 const Auth = () => {
   const navigate = useNavigate();
