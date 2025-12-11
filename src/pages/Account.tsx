@@ -8,7 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { User, Mail, Calendar, Shield, Bell, Camera, Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { User, Mail, Calendar, Shield, Bell, Camera, Loader2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -43,6 +54,7 @@ const Account = () => {
   const [savingPassword, setSavingPassword] = useState(false);
   const [savingNotifications, setSavingNotifications] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [deletingData, setDeletingData] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -215,6 +227,60 @@ const Account = () => {
       toast.error("Failed to save notification settings: " + error.message);
     } finally {
       setSavingNotifications(false);
+    }
+  };
+
+  const handleDeleteUserData = async () => {
+    if (!user) return;
+    
+    setDeletingData(true);
+    
+    try {
+      // Delete health profile
+      const { error: healthError } = await supabase
+        .from("health_profiles")
+        .delete()
+        .eq("user_id", user.id);
+      
+      if (healthError) throw healthError;
+
+      // Delete daily tracking data
+      const { error: trackingError } = await supabase
+        .from("daily_tracking")
+        .delete()
+        .eq("user_id", user.id);
+      
+      if (trackingError) throw trackingError;
+
+      // Reset profile to defaults (keep the profile row for auth)
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          first_name: null,
+          last_name: null,
+          avatar_url: null,
+          email_notifications: true,
+          meal_reminders: true,
+          weekly_reports: true,
+        })
+        .eq("user_id", user.id);
+      
+      if (profileError) throw profileError;
+
+      // Reset local state
+      setFirstName("");
+      setLastName("");
+      setAvatarUrl(null);
+      setEmailNotifications(true);
+      setMealReminders(true);
+      setWeeklyReports(true);
+      setProfile(null);
+
+      toast.success("All your data has been deleted successfully");
+    } catch (error: any) {
+      toast.error("Failed to delete data: " + error.message);
+    } finally {
+      setDeletingData(false);
     }
   };
 
@@ -433,6 +499,51 @@ const Account = () => {
                   {savingNotifications && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   Save Notification Settings
                 </Button>
+              </CardContent>
+            </Card>
+
+            {/* Delete User Data */}
+            <Card className="border-destructive/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <Trash2 className="w-5 h-5" />
+                  Delete User Data
+                </CardTitle>
+                <CardDescription>
+                  Permanently delete all your data including health profiles, meal plans, and tracking history
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  This action will delete your health profile, daily tracking data, and reset your profile settings. 
+                  Your account will remain active but all personalized data will be removed. This cannot be undone.
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={deletingData}>
+                      {deletingData && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      Delete All My Data
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your health profile, 
+                        daily tracking data, and reset your profile settings.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteUserData}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Yes, delete my data
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardContent>
             </Card>
           </div>
