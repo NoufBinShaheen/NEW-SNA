@@ -65,7 +65,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-background/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-background/60 text-sm">
-            © 2024 Smart Nutrition Assistant. All rights reserved.
+            © 2025 Smart Nutrition Assistant. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <a href="#" className="text-background/60 hover:text-background text-sm transition-colors">
