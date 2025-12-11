@@ -1,3 +1,10 @@
 project_id = "ofwuunclinnihtxjsaup"
 
-# JWT verification is enabled by default - no need to disable it
+[functions.generate-meal-plan]
+verify_jwt = true
+
+[functions.delete-account]
+verify_jwt = true
+
+[functions.text-to-speech]
+verify_jwt = true
