@@ -151,10 +151,11 @@ const Dashboard = () => {
   const consumedFat = dailyTracking?.food_entries?.reduce((sum, e) => sum + e.fat, 0) || 0;
   const waterIntake = dailyTracking?.water_intake || 0;
   
-  // Target macros
-  const targetProtein = dailyCalories ? Math.round(dailyCalories * 0.25 / 4) : 0;
-  const targetCarbs = dailyCalories ? Math.round(dailyCalories * 0.45 / 4) : 0;
-  const targetFat = dailyCalories ? Math.round(dailyCalories * 0.30 / 9) : 0;
+  // Target macros (default to 2000 calories if not calculated)
+  const effectiveCalories = dailyCalories || 2000;
+  const targetProtein = Math.round(effectiveCalories * 0.25 / 4);
+  const targetCarbs = Math.round(effectiveCalories * 0.45 / 4);
+  const targetFat = Math.round(effectiveCalories * 0.30 / 9);
 
   if (authLoading || isLoading) {
     return (
@@ -301,9 +302,9 @@ const Dashboard = () => {
                         <span className="text-sm text-muted-foreground">Calories</span>
                       </div>
                       <p className="text-lg font-bold text-foreground">
-                        {consumedCalories} <span className="text-sm font-normal text-muted-foreground">/ {dailyCalories || 0}</span>
+                        {consumedCalories} <span className="text-sm font-normal text-muted-foreground">/ {effectiveCalories}</span>
                       </p>
-                      <Progress value={dailyCalories ? (consumedCalories / dailyCalories) * 100 : 0} className="h-2" />
+                      <Progress value={(consumedCalories / effectiveCalories) * 100} className="h-2" />
                     </div>
                     
                     {/* Protein */}
@@ -315,7 +316,7 @@ const Dashboard = () => {
                       <p className="text-lg font-bold text-foreground">
                         {consumedProtein}g <span className="text-sm font-normal text-muted-foreground">/ {targetProtein}g</span>
                       </p>
-                      <Progress value={targetProtein ? (consumedProtein / targetProtein) * 100 : 0} className="h-2" />
+                      <Progress value={(consumedProtein / targetProtein) * 100} className="h-2" />
                     </div>
                     
                     {/* Carbs */}
@@ -327,7 +328,7 @@ const Dashboard = () => {
                       <p className="text-lg font-bold text-foreground">
                         {consumedCarbs}g <span className="text-sm font-normal text-muted-foreground">/ {targetCarbs}g</span>
                       </p>
-                      <Progress value={targetCarbs ? (consumedCarbs / targetCarbs) * 100 : 0} className="h-2" />
+                      <Progress value={(consumedCarbs / targetCarbs) * 100} className="h-2" />
                     </div>
                     
                     {/* Fat */}
@@ -339,7 +340,7 @@ const Dashboard = () => {
                       <p className="text-lg font-bold text-foreground">
                         {consumedFat}g <span className="text-sm font-normal text-muted-foreground">/ {targetFat}g</span>
                       </p>
-                      <Progress value={targetFat ? (consumedFat / targetFat) * 100 : 0} className="h-2" />
+                      <Progress value={(consumedFat / targetFat) * 100} className="h-2" />
                     </div>
                     
                     {/* Water */}
