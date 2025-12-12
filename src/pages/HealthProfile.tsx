@@ -210,7 +210,38 @@ const HealthProfile = () => {
     }
   };
 
-  // Redirect to auth if not logged in
+  const getMaintenanceCalorieRanges = () => {
+    const bmi = calculateBMI();
+    const bmiCategory = getBMICategory(bmi);
+    
+    // Maintenance calorie recommendations based on BMI
+    if (bmiCategory === "Underweight") {
+      return [
+        { value: "maintain_high", label: "Higher Maintenance (2400-2600 kcal)", description: "Prevent further weight loss" },
+        { value: "maintain_moderate", label: "Standard Maintenance (2200-2400 kcal)", description: "Keep current weight stable" },
+        { value: "maintain_active", label: "Active Maintenance (2600-2800 kcal)", description: "For higher activity levels" },
+      ];
+    } else if (bmiCategory === "Normal") {
+      return [
+        { value: "maintain_standard", label: "Standard Maintenance (2000-2200 kcal)", description: "Ideal for your BMI range" },
+        { value: "maintain_active", label: "Active Maintenance (2200-2400 kcal)", description: "For moderate to high activity" },
+        { value: "maintain_low", label: "Light Maintenance (1800-2000 kcal)", description: "For sedentary lifestyle" },
+      ];
+    } else if (bmiCategory === "Overweight") {
+      return [
+        { value: "maintain_moderate", label: "Moderate Maintenance (1800-2000 kcal)", description: "Maintain while staying healthy" },
+        { value: "maintain_low", label: "Lower Maintenance (1600-1800 kcal)", description: "Gradual improvement over time" },
+        { value: "maintain_active", label: "Active Maintenance (2000-2200 kcal)", description: "If exercising regularly" },
+      ];
+    } else {
+      return [
+        { value: "maintain_controlled", label: "Controlled Maintenance (1600-1800 kcal)", description: "Health-focused maintenance" },
+        { value: "maintain_low", label: "Lower Maintenance (1400-1600 kcal)", description: "With medical supervision" },
+        { value: "maintain_moderate", label: "Moderate Maintenance (1800-2000 kcal)", description: "If exercising regularly" },
+      ];
+    }
+  };
+
   useEffect(() => {
     if (!authLoading && !user) {
       toast({
@@ -878,6 +909,52 @@ const HealthProfile = () => {
                       {formData.height && formData.weight ? (
                         <div className="space-y-2">
                           {getMuscleCalorieRanges().map((range) => (
+                            <div
+                              key={range.value}
+                              onClick={() => handleInputChange("calorieDeficit", range.value)}
+                              className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                                formData.calorieDeficit === range.value
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:border-primary/50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                  formData.calorieDeficit === range.value ? "border-primary" : "border-muted-foreground"
+                                }`}>
+                                  {formData.calorieDeficit === range.value && (
+                                    <div className="w-2 h-2 rounded-full bg-primary" />
+                                  )}
+                                </div>
+                                <span className="font-medium">{range.label}</span>
+                              </div>
+                              <p className="text-sm text-muted-foreground ml-6 mt-1">{range.description}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Please enter your height and weight in Step 1 to see personalized calorie recommendations.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Calorie Range Selector - Shows when Maintain Weight is selected */}
+                  {formData.goals.includes("Maintain Weight") && (
+                    <div className="space-y-3 p-4 bg-muted/50 rounded-lg border border-muted-foreground/20">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-base font-medium">Choose Your Maintenance Calorie Target</Label>
+                        {formData.height && formData.weight && (
+                          <span className="text-sm text-muted-foreground">
+                            Your BMI: <span className="font-semibold text-foreground">{calculateBMI().toFixed(1)}</span> ({getBMICategory(calculateBMI())})
+                          </span>
+                        )}
+                      </div>
+                      
+                      {formData.height && formData.weight ? (
+                        <div className="space-y-2">
+                          {getMaintenanceCalorieRanges().map((range) => (
                             <div
                               key={range.value}
                               onClick={() => handleInputChange("calorieDeficit", range.value)}
