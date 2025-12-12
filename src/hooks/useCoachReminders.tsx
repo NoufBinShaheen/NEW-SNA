@@ -20,70 +20,7 @@ export const useCoachReminders = (userId: string | undefined) => {
     }
   };
 
-  // Check and show in-app reminder
-  useEffect(() => {
-    if (!userId || hasShownReminder) return;
-
-    const checkAndShowReminder = async () => {
-      try {
-        const { data: profile, error } = await supabase
-          .from("profiles")
-          .select("last_coach_session, meal_reminders, coach_reminder_frequency")
-          .eq("user_id", userId)
-          .single();
-
-        if (error || !profile?.meal_reminders) return;
-        if (profile.coach_reminder_frequency === "none") return;
-
-        const lastSession = profile.last_coach_session 
-          ? new Date(profile.last_coach_session) 
-          : null;
-        
-        const now = new Date();
-        let shouldRemind = false;
-        let reminderMessage = "";
-
-        if (!lastSession) {
-          shouldRemind = true;
-          reminderMessage = "You haven't tried the AI Coach yet! Get personalized nutrition advice now.";
-        } else {
-          const daysSinceLastSession = Math.floor(
-            (now.getTime() - lastSession.getTime()) / (1000 * 60 * 60 * 24)
-          );
-
-          if (profile.coach_reminder_frequency === "daily" && daysSinceLastSession >= 1) {
-            shouldRemind = true;
-            reminderMessage = "It's been a day since your last coaching session. Check in with your AI Coach!";
-          } else if (profile.coach_reminder_frequency === "weekly" && daysSinceLastSession >= 7) {
-            shouldRemind = true;
-            reminderMessage = `It's been ${daysSinceLastSession} days since your last coaching session. Time for a check-in!`;
-          }
-        }
-
-        if (shouldRemind) {
-          setHasShownReminder(true);
-          toast({
-            title: "🥗 AI Coach Reminder",
-            description: reminderMessage,
-            action: (
-              <a 
-                href="/coach" 
-                className="bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm font-medium hover:bg-primary/90"
-              >
-                Open Coach
-              </a>
-            ),
-          });
-        }
-      } catch (error) {
-        console.error("Error checking coach reminder:", error);
-      }
-    };
-
-    // Small delay to not show immediately on page load
-    const timer = setTimeout(checkAndShowReminder, 2000);
-    return () => clearTimeout(timer);
-  }, [userId, hasShownReminder, toast]);
+  // In-app toast reminders disabled - only email and push notifications are active
 
   // Request browser push notification permission
   const requestPushPermission = async () => {
