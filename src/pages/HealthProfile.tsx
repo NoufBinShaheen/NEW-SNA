@@ -31,6 +31,17 @@ const healthConditions = [
   "None"
 ];
 
+const transplantTypes = [
+  "Kidney Transplant",
+  "Liver Transplant",
+  "Heart Transplant",
+  "Lung Transplant",
+  "Pancreas Transplant",
+  "Bone Marrow Transplant",
+  "Cornea Transplant",
+  "Other Transplant"
+];
+
 const medicationRecommendations: Record<string, string[]> = {
   "Diabetes Type 1": ["Insulin (Humalog, Novolog)", "Metformin", "Pramlintide (Symlin)"],
   "Diabetes Type 2": ["Metformin", "Glipizide", "Sitagliptin (Januvia)", "Empagliflozin (Jardiance)"],
@@ -44,6 +55,14 @@ const medicationRecommendations: Record<string, string[]> = {
   "Thyroid Disorder": ["Levothyroxine (Synthroid)", "Methimazole", "Propylthiouracil"],
   "Obesity": ["Orlistat (Xenical)", "Liraglutide (Saxenda)", "Semaglutide (Wegovy)", "Phentermine"],
   "Organ Transplant": ["Tacrolimus (Prograf)", "Cyclosporine (Neoral)", "Mycophenolate (CellCept)", "Prednisone"],
+  "Kidney Transplant": ["Tacrolimus", "Mycophenolate", "Prednisone", "Azathioprine"],
+  "Liver Transplant": ["Tacrolimus", "Cyclosporine", "Mycophenolate", "Corticosteroids"],
+  "Heart Transplant": ["Tacrolimus", "Mycophenolate", "Prednisone", "Sirolimus"],
+  "Lung Transplant": ["Tacrolimus", "Azathioprine", "Prednisone", "Mycophenolate"],
+  "Pancreas Transplant": ["Tacrolimus", "Mycophenolate", "Prednisone", "Sirolimus"],
+  "Bone Marrow Transplant": ["Cyclosporine", "Tacrolimus", "Methotrexate", "Corticosteroids"],
+  "Cornea Transplant": ["Prednisolone eye drops", "Cyclosporine eye drops", "Oral steroids (rarely)"],
+  "Other Transplant": ["Tacrolimus (Prograf)", "Cyclosporine (Neoral)", "Mycophenolate (CellCept)", "Prednisone"],
 };
 
 const dietaryPreferences = [
@@ -104,6 +123,7 @@ const HealthProfile = () => {
     weight: "",
     activityLevel: "",
     healthConditions: [] as string[],
+    transplantType: "" as string,
     medications: "",
     dietaryPreferences: [] as string[],
     allergies: [] as string[],
@@ -148,6 +168,11 @@ const HealthProfile = () => {
           .maybeSingle();
 
         if (profile || healthProfile) {
+          // Extract transplant type from health conditions if present
+          const conditions = healthProfile?.health_conditions || [];
+          const transplantType = transplantTypes.find(t => conditions.includes(t)) || "";
+          const filteredConditions = conditions.filter((c: string) => !transplantTypes.includes(c));
+          
           setFormData(prev => ({
             ...prev,
             firstName: profile?.first_name || "",
@@ -157,7 +182,8 @@ const HealthProfile = () => {
             height: healthProfile?.height?.toString() || "",
             weight: healthProfile?.weight?.toString() || "",
             activityLevel: healthProfile?.activity_level || "",
-            healthConditions: healthProfile?.health_conditions || [],
+            healthConditions: filteredConditions,
+            transplantType: transplantType,
             medications: healthProfile?.medications || "",
             dietaryPreferences: healthProfile?.dietary_preferences || [],
             allergies: healthProfile?.allergies || [],
@@ -261,7 +287,9 @@ const HealthProfile = () => {
         height: formData.height ? parseFloat(formData.height) : null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         activity_level: formData.activityLevel || null,
-        health_conditions: formData.healthConditions,
+        health_conditions: formData.transplantType 
+          ? [...formData.healthConditions, formData.transplantType] 
+          : formData.healthConditions,
         medications: formData.medications || null,
         dietary_preferences: formData.dietaryPreferences,
         allergies: formData.allergies,
@@ -501,9 +529,13 @@ const HealthProfile = () => {
                           <Checkbox
                             id={condition}
                             checked={formData.healthConditions.includes(condition)}
-                            onCheckedChange={(checked) => 
-                              handleCheckboxChange("healthConditions", condition, checked as boolean)
-                            }
+                            onCheckedChange={(checked) => {
+                              handleCheckboxChange("healthConditions", condition, checked as boolean);
+                              // Clear transplant type if unchecking Organ Transplant
+                              if (condition === "Organ Transplant" && !checked) {
+                                setFormData(prev => ({ ...prev, transplantType: "" }));
+                              }
+                            }}
                           />
                           <Label htmlFor={condition} className="text-sm font-normal cursor-pointer">
                             {condition}
@@ -511,18 +543,44 @@ const HealthProfile = () => {
                         </div>
                       ))}
                     </div>
+                    
+                    {/* Transplant Type Selector */}
+                    {formData.healthConditions.includes("Organ Transplant") && (
+                      <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg space-y-3">
+                        <Label className="text-primary font-medium">What type of transplant do you have?</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {transplantTypes.map((type) => (
+                            <div 
+                              key={type} 
+                              onClick={() => setFormData(prev => ({ ...prev, transplantType: type }))}
+                              className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                                formData.transplantType === type 
+                                  ? "bg-primary text-primary-foreground border-primary" 
+                                  : "bg-background border-border hover:border-primary/50"
+                              }`}
+                            >
+                              <span className="text-sm font-medium">{type}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          This helps us tailor your nutrition plan for post-transplant dietary needs.
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="medications">Current Medications (optional)</Label>
                     
                     {/* Medication Recommendations */}
-                    {formData.healthConditions.filter(c => c !== "None" && medicationRecommendations[c]).length > 0 && (
+                    {(formData.healthConditions.filter(c => c !== "None" && medicationRecommendations[c]).length > 0 || 
+                      (formData.transplantType && medicationRecommendations[formData.transplantType])) && (
                       <div className="bg-muted/50 rounded-lg p-4 space-y-3">
                         <p className="text-sm font-medium text-primary">
                           💊 Common medications for your conditions:
                         </p>
                         {formData.healthConditions
-                          .filter(c => c !== "None" && medicationRecommendations[c])
+                          .filter(c => c !== "None" && c !== "Organ Transplant" && medicationRecommendations[c])
                           .map(condition => (
                             <div key={condition} className="space-y-1">
                               <p className="text-xs font-semibold text-foreground">{condition}:</p>
@@ -538,6 +596,21 @@ const HealthProfile = () => {
                               </div>
                             </div>
                           ))}
+                        {formData.transplantType && medicationRecommendations[formData.transplantType] && (
+                          <div className="space-y-1">
+                            <p className="text-xs font-semibold text-foreground">{formData.transplantType}:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {medicationRecommendations[formData.transplantType].map(med => (
+                                <span 
+                                  key={med} 
+                                  className="text-xs bg-background px-2 py-1 rounded border border-border text-muted-foreground"
+                                >
+                                  {med}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         <p className="text-xs text-muted-foreground italic">
                           Note: Always consult your doctor before taking any medication.
                         </p>
