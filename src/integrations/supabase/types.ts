@@ -51,6 +51,10 @@ export type Database = {
           age: number | null
           allergies: string[] | null
           created_at: string
+          custom_calories: number | null
+          custom_carbs: number | null
+          custom_fat: number | null
+          custom_protein: number | null
           dietary_preferences: string[] | null
           disliked_foods: string | null
           gender: string | null
@@ -71,6 +75,10 @@ export type Database = {
           age?: number | null
           allergies?: string[] | null
           created_at?: string
+          custom_calories?: number | null
+          custom_carbs?: number | null
+          custom_fat?: number | null
+          custom_protein?: number | null
           dietary_preferences?: string[] | null
           disliked_foods?: string | null
           gender?: string | null
@@ -91,6 +99,10 @@ export type Database = {
           age?: number | null
           allergies?: string[] | null
           created_at?: string
+          custom_calories?: number | null
+          custom_carbs?: number | null
+          custom_fat?: number | null
+          custom_protein?: number | null
           dietary_preferences?: string[] | null
           disliked_foods?: string | null
           gender?: string | null
