@@ -45,6 +45,28 @@ serve(async (req: Request) => {
     const skipped: string[] = [];
 
     for (const profile of profiles || []) {
+      // Get user's health profile for calorie target
+      const { data: healthProfile } = await supabase
+        .from("health_profiles")
+        .select("weight, activity_level")
+        .eq("user_id", profile.user_id)
+        .maybeSingle();
+
+      // Calculate daily calorie target (default 2000 if no profile)
+      let dailyCalorieTarget = 2000;
+      if (healthProfile?.weight && healthProfile?.activity_level) {
+        const weight = Number(healthProfile.weight);
+        const activityMultipliers: Record<string, number> = {
+          sedentary: 1.2,
+          light: 1.375,
+          moderate: 1.55,
+          active: 1.725,
+          extra: 1.9,
+        };
+        const multiplier = activityMultipliers[healthProfile.activity_level] || 1.55;
+        dailyCalorieTarget = Math.round(weight * 22 * multiplier);
+      }
+
       // Check if user has already logged food today
       const { data: todayTracking, error: trackingError } = await supabase
         .from("daily_tracking")
@@ -58,10 +80,19 @@ serve(async (req: Request) => {
         continue;
       }
 
-      // Skip if user has already logged food today
+      // Calculate consumed calories
       const foodEntries = todayTracking?.food_entries || [];
-      if (Array.isArray(foodEntries) && foodEntries.length > 0) {
-        console.log(`Skipping user ${profile.user_id} - already logged ${foodEntries.length} entries today`);
+      let consumedCalories = 0;
+      if (Array.isArray(foodEntries)) {
+        consumedCalories = foodEntries.reduce((sum: number, entry: any) => {
+          return sum + (Number(entry.calories) || 0);
+        }, 0);
+      }
+
+      // Skip if user has reached ≥80% of their calorie goal
+      const completionPercentage = (consumedCalories / dailyCalorieTarget) * 100;
+      if (completionPercentage >= 80) {
+        console.log(`Skipping user ${profile.user_id} - completed ${completionPercentage.toFixed(0)}% of daily goal`);
         skipped.push(profile.user_id);
         continue;
       }
