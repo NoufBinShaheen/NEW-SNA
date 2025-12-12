@@ -340,7 +340,7 @@ const Dashboard = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Daily Calories</p>
                       <p className="text-lg font-semibold text-foreground">
-                        {dailyCalories || 2000} kcal
+                        {effectiveCalories} kcal
                       </p>
                     </div>
                   </CardContent>
