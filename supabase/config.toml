@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.send-coach-reminder]
 verify_jwt = false
+
+[functions.send-tracking-reminder]
+verify_jwt = false
