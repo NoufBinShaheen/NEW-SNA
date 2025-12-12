@@ -129,6 +129,9 @@ const Tracking = () => {
     };
   };
   const calculateDailyCalories = () => {
+    // Use custom calories if set
+    if (healthProfile?.custom_calories) return healthProfile.custom_calories;
+    
     if (!healthProfile?.height || !healthProfile?.weight || !healthProfile?.age || !healthProfile?.gender) return 2000;
     let bmr: number;
     if (healthProfile.gender === "male") {
@@ -146,6 +149,12 @@ const Tracking = () => {
     return Math.round(bmr * (activityMultipliers[healthProfile.activity_level || "sedentary"] || 1.2));
   };
   const dailyTarget = calculateDailyCalories();
+  
+  // Use custom macro targets if set, otherwise calculate from calories
+  const targetProtein = healthProfile?.custom_protein ?? Math.round(dailyTarget * 0.25 / 4);
+  const targetCarbs = healthProfile?.custom_carbs ?? Math.round(dailyTarget * 0.45 / 4);
+  const targetFat = healthProfile?.custom_fat ?? Math.round(dailyTarget * 0.30 / 9);
+  
   const totalCalories = foodEntries.reduce((sum, entry) => sum + entry.calories, 0);
   const totalProtein = foodEntries.reduce((sum, entry) => sum + entry.protein, 0);
   const totalCarbs = foodEntries.reduce((sum, entry) => sum + entry.carbs, 0);
@@ -275,9 +284,9 @@ const Tracking = () => {
                   <span className="text-sm text-muted-foreground">Protein</span>
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-2">
-                  {totalProtein}g / {Math.round(dailyTarget * 0.25 / 4)}g
+                  {totalProtein}g / {targetProtein}g
                 </div>
-                <Progress value={totalProtein / (dailyTarget * 0.25 / 4) * 100} className="h-2" />
+                <Progress value={totalProtein / targetProtein * 100} className="h-2" />
               </CardContent>
             </Card>
 
@@ -288,9 +297,9 @@ const Tracking = () => {
                   <span className="text-sm text-muted-foreground">Carbs</span>
                 </div>
                 <div className="text-2xl font-bold text-foreground mb-2">
-                  {totalCarbs}g / {Math.round(dailyTarget * 0.45 / 4)}g
+                  {totalCarbs}g / {targetCarbs}g
                 </div>
-                <Progress value={totalCarbs / (dailyTarget * 0.45 / 4) * 100} className="h-2" />
+                <Progress value={totalCarbs / targetCarbs * 100} className="h-2" />
               </CardContent>
             </Card>
 
