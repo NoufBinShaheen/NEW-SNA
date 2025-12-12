@@ -131,8 +131,52 @@ const HealthProfile = () => {
     goals: [] as string[],
     targetWeight: "",
     timeline: "",
-    additionalNotes: ""
+    additionalNotes: "",
+    calorieDeficit: "" as string
   });
+
+  // Calculate BMI and recommended calorie ranges
+  const calculateBMI = () => {
+    const height = parseFloat(formData.height) / 100; // cm to m
+    const weight = parseFloat(formData.weight);
+    if (height > 0 && weight > 0) {
+      return weight / (height * height);
+    }
+    return 0;
+  };
+
+  const getBMICategory = (bmi: number) => {
+    if (bmi < 18.5) return "Underweight";
+    if (bmi < 25) return "Normal";
+    if (bmi < 30) return "Overweight";
+    return "Obese";
+  };
+
+  const getCalorieRanges = () => {
+    const bmi = calculateBMI();
+    const bmiCategory = getBMICategory(bmi);
+    
+    // Base calorie recommendations based on BMI
+    if (bmiCategory === "Obese") {
+      return [
+        { value: "aggressive", label: "Aggressive (1200-1400 kcal)", description: "Faster weight loss, requires medical supervision" },
+        { value: "moderate", label: "Moderate (1400-1600 kcal)", description: "Steady weight loss, sustainable approach" },
+        { value: "gradual", label: "Gradual (1600-1800 kcal)", description: "Slow and steady, easiest to maintain" },
+      ];
+    } else if (bmiCategory === "Overweight") {
+      return [
+        { value: "moderate", label: "Moderate (1400-1600 kcal)", description: "Recommended for your BMI range" },
+        { value: "gradual", label: "Gradual (1600-1800 kcal)", description: "Sustainable approach, minimal hunger" },
+        { value: "slow", label: "Slow (1800-2000 kcal)", description: "Very gradual, easiest to maintain" },
+      ];
+    } else {
+      return [
+        { value: "gradual", label: "Gradual (1600-1800 kcal)", description: "Safe approach for your BMI" },
+        { value: "slow", label: "Slow (1800-2000 kcal)", description: "Recommended for near-normal BMI" },
+        { value: "minimal", label: "Minimal (2000-2200 kcal)", description: "Focus on body composition" },
+      ];
+    }
+  };
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -740,6 +784,52 @@ const HealthProfile = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Calorie Range Selector - Shows when Lose Weight is selected */}
+                  {formData.goals.includes("Lose Weight") && (
+                    <div className="space-y-3 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-base font-medium">Choose Your Calorie Target</Label>
+                        {formData.height && formData.weight && (
+                          <span className="text-sm text-muted-foreground">
+                            Your BMI: <span className="font-semibold text-foreground">{calculateBMI().toFixed(1)}</span> ({getBMICategory(calculateBMI())})
+                          </span>
+                        )}
+                      </div>
+                      
+                      {formData.height && formData.weight ? (
+                        <div className="space-y-2">
+                          {getCalorieRanges().map((range) => (
+                            <div
+                              key={range.value}
+                              onClick={() => handleInputChange("calorieDeficit", range.value)}
+                              className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                                formData.calorieDeficit === range.value
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:border-primary/50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                  formData.calorieDeficit === range.value ? "border-primary" : "border-muted-foreground"
+                                }`}>
+                                  {formData.calorieDeficit === range.value && (
+                                    <div className="w-2 h-2 rounded-full bg-primary" />
+                                  )}
+                                </div>
+                                <span className="font-medium">{range.label}</span>
+                              </div>
+                              <p className="text-sm text-muted-foreground ml-6 mt-1">{range.description}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Please enter your height and weight in Step 1 to see personalized calorie recommendations.
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="targetWeight">Target Weight (kg)</Label>
