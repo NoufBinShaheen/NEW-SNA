@@ -570,7 +570,7 @@ const HealthProfile = () => {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="medications">Current Medications (optional)</Label>
+                    <Label htmlFor="medications">Current Medications</Label>
                     
                     {/* Medication Recommendations */}
                     {(formData.healthConditions.filter(c => c !== "None" && medicationRecommendations[c]).length > 0 || 
