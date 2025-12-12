@@ -4,14 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   User, Heart, Utensils, Target, Activity, Scale, Ruler, 
-  Calendar, Edit, Sparkles, Apple, Droplets, Flame, Loader2
+  Calendar, Edit, Sparkles, Apple, Droplets, Flame, Loader2, Pencil
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface HealthProfile {
   age: number | null;
@@ -73,6 +77,11 @@ const Dashboard = () => {
   const [healthProfile, setHealthProfile] = useState<HealthProfile | null>(null);
   const [dailyTracking, setDailyTracking] = useState<DailyTracking | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditingMacros, setIsEditingMacros] = useState(false);
+  const [customCalories, setCustomCalories] = useState<number | null>(null);
+  const [customProtein, setCustomProtein] = useState<number | null>(null);
+  const [customCarbs, setCustomCarbs] = useState<number | null>(null);
+  const [customFat, setCustomFat] = useState<number | null>(null);
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
@@ -151,11 +160,24 @@ const Dashboard = () => {
   const consumedFat = dailyTracking?.food_entries?.reduce((sum, e) => sum + e.fat, 0) || 0;
   const waterIntake = dailyTracking?.water_intake || 0;
   
-  // Target macros (default to 2000 calories if not calculated)
-  const effectiveCalories = dailyCalories || 2000;
-  const targetProtein = Math.round(effectiveCalories * 0.25 / 4);
-  const targetCarbs = Math.round(effectiveCalories * 0.45 / 4);
-  const targetFat = Math.round(effectiveCalories * 0.30 / 9);
+  // Target macros (default to 2000 calories if not calculated, or use custom values)
+  const effectiveCalories = customCalories ?? dailyCalories ?? 2000;
+  const targetProtein = customProtein ?? Math.round(effectiveCalories * 0.25 / 4);
+  const targetCarbs = customCarbs ?? Math.round(effectiveCalories * 0.45 / 4);
+  const targetFat = customFat ?? Math.round(effectiveCalories * 0.30 / 9);
+
+  const handleSaveMacros = () => {
+    toast.success("Custom nutrition targets saved!");
+    setIsEditingMacros(false);
+  };
+
+  const handleResetMacros = () => {
+    setCustomCalories(null);
+    setCustomProtein(null);
+    setCustomCarbs(null);
+    setCustomFat(null);
+    toast.success("Reset to calculated targets");
+  };
 
   if (authLoading || isLoading) {
     return (
@@ -492,12 +514,78 @@ const Dashboard = () => {
               {/* Daily Recommendations Preview */}
               <Card className="border-border/50 shadow-lg mt-6">
                 <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-primary" />
-                    <CardTitle>Daily Nutrition Targets</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-primary" />
+                      <CardTitle>Daily Nutrition Targets</CardTitle>
+                    </div>
+                    <Dialog open={isEditingMacros} onOpenChange={setIsEditingMacros}>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Edit Nutrition Targets</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="calories">Daily Calories</Label>
+                            <Input
+                              id="calories"
+                              type="number"
+                              placeholder={String(dailyCalories || 2000)}
+                              value={customCalories ?? ""}
+                              onChange={(e) => setCustomCalories(e.target.value ? Number(e.target.value) : null)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="protein">Protein (g)</Label>
+                            <Input
+                              id="protein"
+                              type="number"
+                              placeholder={String(Math.round((dailyCalories || 2000) * 0.25 / 4))}
+                              value={customProtein ?? ""}
+                              onChange={(e) => setCustomProtein(e.target.value ? Number(e.target.value) : null)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="carbs">Carbs (g)</Label>
+                            <Input
+                              id="carbs"
+                              type="number"
+                              placeholder={String(Math.round((dailyCalories || 2000) * 0.45 / 4))}
+                              value={customCarbs ?? ""}
+                              onChange={(e) => setCustomCarbs(e.target.value ? Number(e.target.value) : null)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="fat">Fat (g)</Label>
+                            <Input
+                              id="fat"
+                              type="number"
+                              placeholder={String(Math.round((dailyCalories || 2000) * 0.30 / 9))}
+                              value={customFat ?? ""}
+                              onChange={(e) => setCustomFat(e.target.value ? Number(e.target.value) : null)}
+                            />
+                          </div>
+                          <div className="flex gap-2 pt-4">
+                            <Button onClick={handleSaveMacros} className="flex-1">
+                              Save
+                            </Button>
+                            <Button variant="outline" onClick={handleResetMacros}>
+                              Reset
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   <CardDescription>
-                    Based on your profile and goals
+                    {(customCalories || customProtein || customCarbs || customFat) 
+                      ? "Custom targets set by you" 
+                      : "Based on your profile and goals"}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -506,34 +594,28 @@ const Dashboard = () => {
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
                         <Flame className="w-6 h-6 text-primary" />
                       </div>
-                      <p className="text-2xl font-bold text-foreground">{dailyCalories || 2000}</p>
+                      <p className="text-2xl font-bold text-foreground">{effectiveCalories}</p>
                       <p className="text-sm text-muted-foreground">Calories</p>
                     </div>
                     <div className="text-center">
                       <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center mx-auto mb-2">
                         <span className="text-xl">🥩</span>
                       </div>
-                      <p className="text-2xl font-bold text-foreground">
-                        {targetProtein || Math.round(2000 * 0.25 / 4)}g
-                      </p>
+                      <p className="text-2xl font-bold text-foreground">{targetProtein}g</p>
                       <p className="text-sm text-muted-foreground">Protein</p>
                     </div>
                     <div className="text-center">
                       <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-2">
                         <span className="text-xl">🍞</span>
                       </div>
-                      <p className="text-2xl font-bold text-foreground">
-                        {targetCarbs || Math.round(2000 * 0.45 / 4)}g
-                      </p>
+                      <p className="text-2xl font-bold text-foreground">{targetCarbs}g</p>
                       <p className="text-sm text-muted-foreground">Carbs</p>
                     </div>
                     <div className="text-center">
                       <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-2">
                         <Droplets className="w-6 h-6 text-destructive" />
                       </div>
-                      <p className="text-2xl font-bold text-foreground">
-                        {targetFat || Math.round(2000 * 0.30 / 9)}g
-                      </p>
+                      <p className="text-2xl font-bold text-foreground">{targetFat}g</p>
                       <p className="text-sm text-muted-foreground">Fat</p>
                     </div>
                   </div>
