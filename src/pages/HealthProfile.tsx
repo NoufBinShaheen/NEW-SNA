@@ -178,6 +178,38 @@ const HealthProfile = () => {
     }
   };
 
+  const getMuscleCalorieRanges = () => {
+    const bmi = calculateBMI();
+    const bmiCategory = getBMICategory(bmi);
+    
+    // Calorie surplus recommendations for muscle building based on BMI
+    if (bmiCategory === "Underweight") {
+      return [
+        { value: "aggressive_bulk", label: "Aggressive Bulk (3000-3500 kcal)", description: "Faster weight gain, ideal for underweight individuals" },
+        { value: "moderate_bulk", label: "Moderate Bulk (2800-3000 kcal)", description: "Steady muscle gain with minimal fat" },
+        { value: "lean_bulk", label: "Lean Bulk (2500-2800 kcal)", description: "Slower but cleaner muscle gains" },
+      ];
+    } else if (bmiCategory === "Normal") {
+      return [
+        { value: "moderate_bulk", label: "Moderate Bulk (2800-3200 kcal)", description: "Recommended for your BMI range" },
+        { value: "lean_bulk", label: "Lean Bulk (2500-2800 kcal)", description: "Minimize fat gain while building muscle" },
+        { value: "maintenance_plus", label: "Maintenance+ (2300-2500 kcal)", description: "Slow recomposition approach" },
+      ];
+    } else if (bmiCategory === "Overweight") {
+      return [
+        { value: "lean_bulk", label: "Lean Bulk (2400-2600 kcal)", description: "Build muscle while managing weight" },
+        { value: "maintenance_plus", label: "Maintenance+ (2200-2400 kcal)", description: "Focus on body recomposition" },
+        { value: "recomp", label: "Recomposition (2000-2200 kcal)", description: "Lose fat while building muscle slowly" },
+      ];
+    } else {
+      return [
+        { value: "recomp", label: "Recomposition (2000-2200 kcal)", description: "Prioritize fat loss with muscle preservation" },
+        { value: "deficit_training", label: "Deficit + Training (1800-2000 kcal)", description: "Lose fat first, maintain muscle" },
+        { value: "moderate_deficit", label: "Moderate Deficit (1600-1800 kcal)", description: "Focus on weight loss, then bulk later" },
+      ];
+    }
+  };
+
   // Redirect to auth if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
@@ -800,6 +832,52 @@ const HealthProfile = () => {
                       {formData.height && formData.weight ? (
                         <div className="space-y-2">
                           {getCalorieRanges().map((range) => (
+                            <div
+                              key={range.value}
+                              onClick={() => handleInputChange("calorieDeficit", range.value)}
+                              className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                                formData.calorieDeficit === range.value
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:border-primary/50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                  formData.calorieDeficit === range.value ? "border-primary" : "border-muted-foreground"
+                                }`}>
+                                  {formData.calorieDeficit === range.value && (
+                                    <div className="w-2 h-2 rounded-full bg-primary" />
+                                  )}
+                                </div>
+                                <span className="font-medium">{range.label}</span>
+                              </div>
+                              <p className="text-sm text-muted-foreground ml-6 mt-1">{range.description}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Please enter your height and weight in Step 1 to see personalized calorie recommendations.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Calorie Range Selector - Shows when Build Muscle is selected */}
+                  {formData.goals.includes("Build Muscle") && (
+                    <div className="space-y-3 p-4 bg-secondary/30 rounded-lg border border-secondary">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-base font-medium">Choose Your Calorie Target for Muscle Building</Label>
+                        {formData.height && formData.weight && (
+                          <span className="text-sm text-muted-foreground">
+                            Your BMI: <span className="font-semibold text-foreground">{calculateBMI().toFixed(1)}</span> ({getBMICategory(calculateBMI())})
+                          </span>
+                        )}
+                      </div>
+                      
+                      {formData.height && formData.weight ? (
+                        <div className="space-y-2">
+                          {getMuscleCalorieRanges().map((range) => (
                             <div
                               key={range.value}
                               onClick={() => handleInputChange("calorieDeficit", range.value)}
