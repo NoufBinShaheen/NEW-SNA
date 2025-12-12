@@ -32,6 +32,10 @@ interface HealthProfile {
   target_weight: number | null;
   timeline: string | null;
   additional_notes: string | null;
+  custom_calories: number | null;
+  custom_protein: number | null;
+  custom_carbs: number | null;
+  custom_fat: number | null;
 }
 
 interface Profile {
@@ -104,6 +108,14 @@ const Dashboard = () => {
         setProfile(profileRes.data);
         setHealthProfile(healthRes.data);
         
+        // Load custom targets from health profile
+        if (healthRes.data) {
+          setCustomCalories(healthRes.data.custom_calories);
+          setCustomProtein(healthRes.data.custom_protein);
+          setCustomCarbs(healthRes.data.custom_carbs);
+          setCustomFat(healthRes.data.custom_fat);
+        }
+        
         if (trackingRes.data) {
           setDailyTracking({
             food_entries: trackingRes.data.food_entries as unknown as FoodEntry[],
@@ -166,17 +178,55 @@ const Dashboard = () => {
   const targetCarbs = customCarbs ?? Math.round(effectiveCalories * 0.45 / 4);
   const targetFat = customFat ?? Math.round(effectiveCalories * 0.30 / 9);
 
-  const handleSaveMacros = () => {
-    toast.success("Custom nutrition targets saved!");
-    setIsEditingMacros(false);
+  const handleSaveMacros = async () => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from("health_profiles")
+        .update({
+          custom_calories: customCalories,
+          custom_protein: customProtein,
+          custom_carbs: customCarbs,
+          custom_fat: customFat
+        })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      
+      toast.success("Custom nutrition targets saved!");
+      setIsEditingMacros(false);
+    } catch (error) {
+      console.error("Error saving targets:", error);
+      toast.error("Failed to save targets");
+    }
   };
 
-  const handleResetMacros = () => {
-    setCustomCalories(null);
-    setCustomProtein(null);
-    setCustomCarbs(null);
-    setCustomFat(null);
-    toast.success("Reset to calculated targets");
+  const handleResetMacros = async () => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from("health_profiles")
+        .update({
+          custom_calories: null,
+          custom_protein: null,
+          custom_carbs: null,
+          custom_fat: null
+        })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+      
+      setCustomCalories(null);
+      setCustomProtein(null);
+      setCustomCarbs(null);
+      setCustomFat(null);
+      toast.success("Reset to calculated targets");
+    } catch (error) {
+      console.error("Error resetting targets:", error);
+      toast.error("Failed to reset targets");
+    }
   };
 
   if (authLoading || isLoading) {
