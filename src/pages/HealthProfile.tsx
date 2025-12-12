@@ -710,7 +710,7 @@ const HealthProfile = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="targetWeight">Target Weight (kg, optional)</Label>
+                      <Label htmlFor="targetWeight">Target Weight (kg)</Label>
                       <Input 
                         id="targetWeight" 
                         type="number" 
