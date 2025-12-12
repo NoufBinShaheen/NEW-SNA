@@ -48,22 +48,6 @@ const HeroSection = () => {
                 Learn More
               </Button>
             </div>
-
-            {/* Stats */}
-            <div className="flex items-center justify-center lg:justify-start gap-8 mt-12 pt-8 border-t border-border animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
-              <div className="text-center lg:text-left">
-                <div className="font-display text-3xl font-bold text-foreground">50K+</div>
-                <div className="text-sm text-muted-foreground">Active Users</div>
-              </div>
-              <div className="text-center lg:text-left">
-                <div className="font-display text-3xl font-bold text-foreground">15+</div>
-                <div className="text-sm text-muted-foreground">Conditions Supported</div>
-              </div>
-              <div className="text-center lg:text-left">
-                <div className="font-display text-3xl font-bold text-foreground">98%</div>
-                <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
-              </div>
-            </div>
           </div>
 
           {/* Hero Visual */}
