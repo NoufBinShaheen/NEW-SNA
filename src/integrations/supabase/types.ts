@@ -62,7 +62,9 @@ export type Database = {
           health_conditions: string[] | null
           height: number | null
           id: string
+          meals_per_day: number | null
           medications: string | null
+          snacks_per_day: number | null
           target_weight: number | null
           timeline: string | null
           updated_at: string
@@ -86,7 +88,9 @@ export type Database = {
           health_conditions?: string[] | null
           height?: number | null
           id?: string
+          meals_per_day?: number | null
           medications?: string | null
+          snacks_per_day?: number | null
           target_weight?: number | null
           timeline?: string | null
           updated_at?: string
@@ -110,7 +114,9 @@ export type Database = {
           health_conditions?: string[] | null
           height?: number | null
           id?: string
+          meals_per_day?: number | null
           medications?: string | null
+          snacks_per_day?: number | null
           target_weight?: number | null
           timeline?: string | null
           updated_at?: string

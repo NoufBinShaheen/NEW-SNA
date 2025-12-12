@@ -132,7 +132,9 @@ const HealthProfile = () => {
     targetWeight: "",
     timeline: "",
     additionalNotes: "",
-    calorieDeficit: "" as string
+    calorieDeficit: "" as string,
+    mealsPerDay: "3",
+    snacksPerDay: "2"
   });
 
   // Calculate BMI and recommended calorie ranges
@@ -298,7 +300,9 @@ const HealthProfile = () => {
             goals: healthProfile?.goals || [],
             targetWeight: healthProfile?.target_weight?.toString() || "",
             timeline: healthProfile?.timeline || "",
-            additionalNotes: healthProfile?.additional_notes || ""
+            additionalNotes: healthProfile?.additional_notes || "",
+            mealsPerDay: healthProfile?.meals_per_day?.toString() || "3",
+            snacksPerDay: healthProfile?.snacks_per_day?.toString() || "2"
           }));
         }
       } catch (error) {
@@ -405,6 +409,8 @@ const HealthProfile = () => {
         target_weight: formData.targetWeight ? parseFloat(formData.targetWeight) : null,
         timeline: formData.timeline || null,
         additional_notes: formData.additionalNotes || null,
+        meals_per_day: formData.mealsPerDay ? parseInt(formData.mealsPerDay) : 3,
+        snacks_per_day: formData.snacksPerDay ? parseInt(formData.snacksPerDay) : 2,
       };
 
       const { error } = await supabase
@@ -1012,6 +1018,41 @@ const HealthProfile = () => {
                           <SelectItem value="6months">6 Months</SelectItem>
                           <SelectItem value="1year">1 Year</SelectItem>
                           <SelectItem value="ongoing">Ongoing / Lifestyle Change</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  {/* Meals and Snacks per Day */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="mealsPerDay">Meals per Day</Label>
+                      <Select value={formData.mealsPerDay} onValueChange={(value) => handleInputChange("mealsPerDay", value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select meals per day" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 meal</SelectItem>
+                          <SelectItem value="2">2 meals</SelectItem>
+                          <SelectItem value="3">3 meals</SelectItem>
+                          <SelectItem value="4">4 meals</SelectItem>
+                          <SelectItem value="5">5 meals</SelectItem>
+                          <SelectItem value="6">6 meals</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="snacksPerDay">Snacks per Day</Label>
+                      <Select value={formData.snacksPerDay} onValueChange={(value) => handleInputChange("snacksPerDay", value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select snacks per day" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">No snacks</SelectItem>
+                          <SelectItem value="1">1 snack</SelectItem>
+                          <SelectItem value="2">2 snacks</SelectItem>
+                          <SelectItem value="3">3 snacks</SelectItem>
+                          <SelectItem value="4">4 snacks</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
