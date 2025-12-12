@@ -19,7 +19,6 @@ const healthConditions = [
   "Diabetes Type 1",
   "Diabetes Type 2",
   "Hypertension",
-  
   "Heart Disease",
   "High Cholesterol",
   "Kidney Disease",
@@ -28,6 +27,7 @@ const healthConditions = [
   "PCOS",
   "Thyroid Disorder",
   "Obesity",
+  "Organ Transplant",
   "None"
 ];
 
@@ -35,7 +35,6 @@ const medicationRecommendations: Record<string, string[]> = {
   "Diabetes Type 1": ["Insulin (Humalog, Novolog)", "Metformin", "Pramlintide (Symlin)"],
   "Diabetes Type 2": ["Metformin", "Glipizide", "Sitagliptin (Januvia)", "Empagliflozin (Jardiance)"],
   "Hypertension": ["Lisinopril", "Amlodipine", "Losartan", "Hydrochlorothiazide"],
-  
   "Heart Disease": ["Aspirin", "Beta-blockers (Metoprolol)", "Statins (Atorvastatin)", "ACE inhibitors"],
   "High Cholesterol": ["Atorvastatin (Lipitor)", "Rosuvastatin (Crestor)", "Ezetimibe (Zetia)"],
   "Kidney Disease": ["ACE inhibitors", "ARBs (Losartan)", "Erythropoietin", "Phosphate binders"],
@@ -44,6 +43,7 @@ const medicationRecommendations: Record<string, string[]> = {
   "PCOS": ["Metformin", "Spironolactone", "Birth control pills", "Clomiphene"],
   "Thyroid Disorder": ["Levothyroxine (Synthroid)", "Methimazole", "Propylthiouracil"],
   "Obesity": ["Orlistat (Xenical)", "Liraglutide (Saxenda)", "Semaglutide (Wegovy)", "Phentermine"],
+  "Organ Transplant": ["Tacrolimus (Prograf)", "Cyclosporine (Neoral)", "Mycophenolate (CellCept)", "Prednisone"],
 };
 
 const dietaryPreferences = [
