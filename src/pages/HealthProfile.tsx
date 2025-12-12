@@ -577,7 +577,7 @@ const HealthProfile = () => {
                       (formData.transplantType && medicationRecommendations[formData.transplantType])) && (
                       <div className="bg-muted/50 rounded-lg p-4 space-y-3">
                         <p className="text-sm font-medium text-primary">
-                          💊 Common medications for your conditions:
+                          💊 Click to add medications to your list:
                         </p>
                         {formData.healthConditions
                           .filter(c => c !== "None" && c !== "Organ Transplant" && medicationRecommendations[c])
@@ -585,14 +585,30 @@ const HealthProfile = () => {
                             <div key={condition} className="space-y-1">
                               <p className="text-xs font-semibold text-foreground">{condition}:</p>
                               <div className="flex flex-wrap gap-1">
-                                {medicationRecommendations[condition].map(med => (
-                                  <span 
-                                    key={med} 
-                                    className="text-xs bg-background px-2 py-1 rounded border border-border text-muted-foreground"
-                                  >
-                                    {med}
-                                  </span>
-                                ))}
+                                {medicationRecommendations[condition].map(med => {
+                                  const isSelected = formData.medications.includes(med);
+                                  return (
+                                    <button 
+                                      key={med}
+                                      type="button"
+                                      onClick={() => {
+                                        if (!isSelected) {
+                                          const newMeds = formData.medications 
+                                            ? `${formData.medications}, ${med}` 
+                                            : med;
+                                          handleInputChange("medications", newMeds);
+                                        }
+                                      }}
+                                      className={`text-xs px-2 py-1 rounded border transition-all ${
+                                        isSelected 
+                                          ? "bg-primary text-primary-foreground border-primary cursor-default" 
+                                          : "bg-background border-border text-muted-foreground hover:border-primary hover:text-primary cursor-pointer"
+                                      }`}
+                                    >
+                                      {med} {isSelected && "✓"}
+                                    </button>
+                                  );
+                                })}
                               </div>
                             </div>
                           ))}
@@ -600,14 +616,30 @@ const HealthProfile = () => {
                           <div className="space-y-1">
                             <p className="text-xs font-semibold text-foreground">{formData.transplantType}:</p>
                             <div className="flex flex-wrap gap-1">
-                              {medicationRecommendations[formData.transplantType].map(med => (
-                                <span 
-                                  key={med} 
-                                  className="text-xs bg-background px-2 py-1 rounded border border-border text-muted-foreground"
-                                >
-                                  {med}
-                                </span>
-                              ))}
+                              {medicationRecommendations[formData.transplantType].map(med => {
+                                const isSelected = formData.medications.includes(med);
+                                return (
+                                  <button 
+                                    key={med}
+                                    type="button"
+                                    onClick={() => {
+                                      if (!isSelected) {
+                                        const newMeds = formData.medications 
+                                          ? `${formData.medications}, ${med}` 
+                                          : med;
+                                        handleInputChange("medications", newMeds);
+                                      }
+                                    }}
+                                    className={`text-xs px-2 py-1 rounded border transition-all ${
+                                      isSelected 
+                                        ? "bg-primary text-primary-foreground border-primary cursor-default" 
+                                        : "bg-background border-border text-muted-foreground hover:border-primary hover:text-primary cursor-pointer"
+                                    }`}
+                                  >
+                                    {med} {isSelected && "✓"}
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
