@@ -1,6 +1,38 @@
-import { Leaf } from "lucide-react";
+import { useState } from "react";
+import { Leaf, Star, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
 
 const Footer = () => {
+  const [rating, setRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [feedback, setFeedback] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmitFeedback = () => {
+    if (rating === 0) {
+      toast({
+        title: "Please select a rating",
+        description: "Click on the stars to rate your experience.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    // Simulate submission
+    setTimeout(() => {
+      toast({
+        title: "Thank you for your feedback!",
+        description: "Your rating and comments help us improve.",
+      });
+      setRating(0);
+      setFeedback("");
+      setIsSubmitting(false);
+    }, 1000);
+  };
+
   const footerLinks = {
     Product: ["Features", "Pricing", "Integrations", "API"],
     Company: ["About Us", "Careers", "Blog", "Press"],
@@ -26,13 +58,51 @@ const Footer = () => {
               AI-powered nutrition guidance for healthy living and chronic disease management. 
               Transform your health with personalized plans and expert coaching.
             </p>
-            <div className="flex items-center gap-4">
-              <div className="px-3 py-1 bg-background/10 rounded-full text-sm text-background/80">
-                🏆 #1 Nutrition App
+            
+            {/* Feedback & Rating Section */}
+            <div className="bg-background/10 rounded-xl p-4 space-y-3">
+              <h4 className="font-semibold text-background text-sm">Rate Your Experience</h4>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    onMouseEnter={() => setHoveredRating(star)}
+                    onMouseLeave={() => setHoveredRating(0)}
+                    className="transition-transform hover:scale-110"
+                  >
+                    <Star
+                      className={`w-6 h-6 transition-colors ${
+                        star <= (hoveredRating || rating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-background/40"
+                      }`}
+                    />
+                  </button>
+                ))}
+                {rating > 0 && (
+                  <span className="text-xs text-background/60 ml-2">
+                    {rating === 5 ? "Excellent!" : rating === 4 ? "Great!" : rating === 3 ? "Good" : rating === 2 ? "Fair" : "Poor"}
+                  </span>
+                )}
               </div>
-              <div className="px-3 py-1 bg-background/10 rounded-full text-sm text-background/80">
-                ⭐ 4.9 Rating
-              </div>
+              <Textarea
+                placeholder="Share your feedback (optional)..."
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                className="bg-background/10 border-background/20 text-background placeholder:text-background/40 text-sm min-h-[60px] resize-none"
+                maxLength={500}
+              />
+              <Button
+                size="sm"
+                onClick={handleSubmitFeedback}
+                disabled={isSubmitting}
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {isSubmitting ? "Submitting..." : "Submit Feedback"}
+              </Button>
             </div>
           </div>
 
