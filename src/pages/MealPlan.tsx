@@ -215,7 +215,9 @@ const MealPlan = () => {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Meals/Day</p>
-                      <p className="text-lg font-semibold text-foreground">5 meals</p>
+                      <p className="text-lg font-semibold text-foreground">
+                        {healthProfile?.meals_per_day || 3} meals
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
