@@ -45,16 +45,21 @@ serve(async (req: Request) => {
     const skipped: string[] = [];
 
     for (const profile of profiles || []) {
-      // Get user's health profile for calorie target
+      // Get user's health profile for calorie target and meal preferences
       const { data: healthProfile } = await supabase
         .from("health_profiles")
-        .select("weight, activity_level")
+        .select("weight, activity_level, meals_per_day, snacks_per_day, custom_calories")
         .eq("user_id", profile.user_id)
         .maybeSingle();
 
-      // Calculate daily calorie target (default 2000 if no profile)
-      let dailyCalorieTarget = 2000;
-      if (healthProfile?.weight && healthProfile?.activity_level) {
+      // Get meal preferences (default 3 meals, 2 snacks)
+      const mealsPerDay = healthProfile?.meals_per_day || 3;
+      const snacksPerDay = healthProfile?.snacks_per_day || 2;
+      const totalMealsAndSnacks = mealsPerDay + snacksPerDay;
+
+      // Calculate daily calorie target
+      let dailyCalorieTarget = healthProfile?.custom_calories || 2000;
+      if (!healthProfile?.custom_calories && healthProfile?.weight && healthProfile?.activity_level) {
         const weight = Number(healthProfile.weight);
         const activityMultipliers: Record<string, number> = {
           sedentary: 1.2,
@@ -108,7 +113,25 @@ serve(async (req: Request) => {
       const userEmail = authUser.user.email;
       const userName = profile.first_name || "there";
 
-      console.log(`Sending food tracking reminder to ${userEmail}`);
+      // Build personalized meal list
+      const mealNames = ["Breakfast", "Lunch", "Dinner"];
+      const mealList: string[] = [];
+      
+      if (mealsPerDay >= 1) mealList.push("🍳 Breakfast");
+      if (mealsPerDay >= 2) mealList.push("🥗 Lunch");
+      if (mealsPerDay >= 3) mealList.push("🍽️ Dinner");
+      if (mealsPerDay >= 4) mealList.push("🌙 Fourth Meal");
+      if (mealsPerDay >= 5) mealList.push("🍴 Fifth Meal");
+      if (mealsPerDay >= 6) mealList.push("🥄 Sixth Meal");
+      
+      // Add snacks
+      for (let i = 1; i <= snacksPerDay; i++) {
+        mealList.push(`🍎 Snack ${i}`);
+      }
+
+      const mealListHtml = mealList.map(meal => `<li>${meal}</li>`).join("");
+
+      console.log(`Sending food tracking reminder to ${userEmail} (${mealsPerDay} meals, ${snacksPerDay} snacks)`);
 
       try {
         const emailResponse = await fetch("https://api.resend.com/emails", {
@@ -126,8 +149,18 @@ serve(async (req: Request) => {
                 <h1 style="color: #10b981; margin-bottom: 20px;">Hey ${userName}! 👋</h1>
                 
                 <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                  We noticed you haven't logged any meals today yet. Tracking your food intake is the key to reaching your nutrition goals!
+                  We noticed you haven't logged all your meals today yet. Tracking your food intake is the key to reaching your nutrition goals!
                 </p>
+                
+                <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                  <h3 style="color: #166534; margin-top: 0;">Your daily meals to log:</h3>
+                  <ul style="color: #166534; font-size: 15px; line-height: 1.8; margin-bottom: 0;">
+                    ${mealListHtml}
+                  </ul>
+                  <p style="color: #166534; font-size: 14px; margin-top: 15px; margin-bottom: 0;">
+                    <strong>Total: ${mealsPerDay} meal${mealsPerDay !== 1 ? 's' : ''} + ${snacksPerDay} snack${snacksPerDay !== 1 ? 's' : ''}</strong>
+                  </p>
+                </div>
                 
                 <p style="font-size: 16px; color: #333; line-height: 1.6;">
                   It only takes a few seconds to log what you've eaten. Let's keep your streak going! 💪
@@ -140,21 +173,19 @@ serve(async (req: Request) => {
                   </a>
                 </div>
                 
-                <div style="background-color: #f0fdf4; border-radius: 8px; padding: 20px; margin: 20px 0;">
-                  <h3 style="color: #166534; margin-top: 0;">Quick Tip 💡</h3>
-                  <p style="color: #166534; font-size: 14px; margin-bottom: 0;">
+                <div style="background-color: #fef3c7; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                  <h3 style="color: #92400e; margin-top: 0;">Quick Tip 💡</h3>
+                  <p style="color: #92400e; font-size: 14px; margin-bottom: 0;">
                     Logging your meals right after eating helps you remember everything and keeps your nutrition data accurate!
                   </p>
                 </div>
                 
                 <p style="font-size: 14px; color: #666; margin-top: 30px;">
-                  Benefits of tracking your food:
+                  Your progress today:
                 </p>
                 <ul style="font-size: 14px; color: #666; line-height: 1.8;">
-                  <li>Stay aware of your calorie intake</li>
-                  <li>Meet your protein and nutrition goals</li>
-                  <li>Identify eating patterns</li>
-                  <li>Stay hydrated by tracking water too</li>
+                  <li>Calories logged: ${Math.round(consumedCalories)} / ${dailyCalorieTarget} kcal</li>
+                  <li>Progress: ${Math.round(completionPercentage)}% of daily goal</li>
                 </ul>
                 
                 <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
