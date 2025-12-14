@@ -188,9 +188,11 @@ const MealPlan = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Daily Target</p>
                       <p className="text-lg font-semibold text-foreground">
-                        {healthProfile?.weight && healthProfile?.height
-                          ? `~${Math.round(healthProfile.weight * 30)} kcal`
-                          : "Set profile"}
+                        {healthProfile?.custom_calories
+                          ? `${healthProfile.custom_calories} kcal`
+                          : healthProfile?.weight
+                            ? `~${Math.round(healthProfile.weight * 30)} kcal`
+                            : "Set profile"}
                       </p>
                     </div>
                   </CardContent>
