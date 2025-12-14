@@ -32,6 +32,20 @@ Always provide practical, actionable advice with specific foods and portions.`;
     let userPrompt = "";
     
     if (type === "meal-plan") {
+      // Build custom nutrition targets section for meal plan
+      const mealsPerDay = healthProfile.meals_per_day || 3;
+      const snacksPerDay = healthProfile.snacks_per_day || 2;
+      
+      const hasCustomTargets = healthProfile.custom_calories || healthProfile.custom_protein || healthProfile.custom_carbs || healthProfile.custom_fat;
+      const customMacroSection = hasCustomTargets ? `
+CUSTOM DAILY NUTRITION TARGETS (User has set these - the meal plan MUST align with these targets):
+- Daily Calories Target: ${healthProfile.custom_calories ? `${healthProfile.custom_calories} kcal` : "Calculate based on profile"}
+- Daily Protein Target: ${healthProfile.custom_protein ? `${healthProfile.custom_protein}g` : "Calculate based on profile"}
+- Daily Carbs Target: ${healthProfile.custom_carbs ? `${healthProfile.custom_carbs}g` : "Calculate based on profile"}
+- Daily Fat Target: ${healthProfile.custom_fat ? `${healthProfile.custom_fat}g` : "Calculate based on profile"}
+
+IMPORTANT: Distribute these macros across all meals and snacks proportionally.` : "";
+
       userPrompt = `Generate a detailed 1-day meal plan for this person:
 - Age: ${healthProfile.age || "Not specified"}
 - Gender: ${healthProfile.gender || "Not specified"}
@@ -43,12 +57,20 @@ Always provide practical, actionable advice with specific foods and portions.`;
 - Allergies: ${healthProfile.allergies?.join(", ") || "None"}
 - Goals: ${healthProfile.goals?.join(", ") || "General wellness"}
 - Target Weight: ${healthProfile.target_weight ? `${healthProfile.target_weight} kg` : "Not specified"}
+- Disliked Foods: ${healthProfile.disliked_foods || "None"}
+- Medications: ${healthProfile.medications || "None"}
+${customMacroSection}
+
+MEAL STRUCTURE PREFERENCE:
+- Number of Meals: ${mealsPerDay} meals per day
+- Number of Snacks: ${snacksPerDay} snacks per day
 
 Provide:
-1. Breakfast, Lunch, Dinner, and 2 Snacks
-2. Estimated calories and macros for each meal
+1. Exactly ${mealsPerDay} main meals and ${snacksPerDay} snacks
+2. Estimated calories and macros for each meal (protein, carbs, fat)
 3. Specific portion sizes
 4. Preparation tips
+5. A daily total that matches the custom macro targets if specified
 
 Format the response in a clear, organized way with emojis for visual appeal.`;
     } else if (type === "nutrition-tips") {
