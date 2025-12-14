@@ -60,6 +60,17 @@ Format the response in a clear, organized way with emojis for visual appeal.`;
 Make tips specific, actionable, and backed by nutrition science.`;
     } else if (type === "coach") {
       // Include full health profile context for personalized coaching
+      // Build custom nutrition targets section
+      const hasCustomTargets = healthProfile.custom_calories || healthProfile.custom_protein || healthProfile.custom_carbs || healthProfile.custom_fat;
+      const customTargetsSection = hasCustomTargets ? `
+CUSTOM DAILY NUTRITION TARGETS (User has set these personalized goals - help them reach these specific targets):
+- Daily Calories: ${healthProfile.custom_calories ? `${healthProfile.custom_calories} kcal` : "Not customized"}
+- Daily Protein: ${healthProfile.custom_protein ? `${healthProfile.custom_protein}g` : "Not customized"}
+- Daily Carbs: ${healthProfile.custom_carbs ? `${healthProfile.custom_carbs}g` : "Not customized"}
+- Daily Fat: ${healthProfile.custom_fat ? `${healthProfile.custom_fat}g` : "Not customized"}
+
+IMPORTANT: The user has customized their nutrition targets. When giving advice, help them reach these specific macro goals. Suggest foods and portion sizes that align with their custom targets.` : "";
+
       const profileContext = `
 USER HEALTH PROFILE (use this to personalize your responses):
 - Age: ${healthProfile.age || "Not specified"}
@@ -75,7 +86,10 @@ USER HEALTH PROFILE (use this to personalize your responses):
 - Disliked Foods: ${healthProfile.disliked_foods || "None specified"}
 - Health Goals: ${healthProfile.goals?.join(", ") || "General wellness"}
 - Timeline: ${healthProfile.timeline || "Not specified"}
+- Meals Per Day: ${healthProfile.meals_per_day || 3}
+- Snacks Per Day: ${healthProfile.snacks_per_day || 2}
 - Additional Notes: ${healthProfile.additional_notes || "None"}
+${customTargetsSection}
 
 You already have access to all the user's health information above. DO NOT ask them to provide this information again. Use it to give personalized, specific advice.`;
 
