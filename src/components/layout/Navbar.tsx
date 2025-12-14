@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Leaf, LogOut, User, Home, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +9,8 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isDashboard = location.pathname === "/dashboard";
 
   const navLinks = [
     { name: "Features", href: "#features" },
@@ -51,12 +53,14 @@ const Navbar = () => {
                       Home
                     </Button>
                   </Link>
-                  <Link to="/dashboard">
-                    <Button variant="ghost" className="font-medium">
-                      <LayoutDashboard className="w-4 h-4 mr-2" />
-                      Dashboard
-                    </Button>
-                  </Link>
+                  {!isDashboard && (
+                    <Link to="/dashboard">
+                      <Button variant="ghost" className="font-medium">
+                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </Button>
+                    </Link>
+                  )}
                 </>
               ) : (
                 navLinks.map((link) => (
@@ -149,12 +153,14 @@ const Navbar = () => {
                         Home
                       </Button>
                     </Link>
-                    <Link to="/dashboard" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start font-medium">
-                        <LayoutDashboard className="w-4 h-4 mr-2" />
-                        Dashboard
-                      </Button>
-                    </Link>
+                    {!isDashboard && (
+                      <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start font-medium">
+                          <LayoutDashboard className="w-4 h-4 mr-2" />
+                          Dashboard
+                        </Button>
+                      </Link>
+                    )}
                     <Link to="/account" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start font-medium">
                         <User className="w-4 h-4 mr-2" />
